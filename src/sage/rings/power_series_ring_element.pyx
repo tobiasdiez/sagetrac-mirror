@@ -1031,7 +1031,7 @@ cdef class PowerSeries(AlgebraElement):
 
         TEST:
 
-        The following was fixed in ticket #8972::
+        The following was fixed in :trac:`8972`::
 
             sage: P.<t> = ZZ[[]]
             sage: 1 / (2+t)
@@ -1155,7 +1155,7 @@ cdef class PowerSeries(AlgebraElement):
         TEST:
 
         The following tests against bugs that were fixed in
-        ticket #8972::
+        :trac:`8972`::
 
             sage: P.<t> = ZZ[]
             sage: R.<x> = P[[]]
@@ -1172,7 +1172,7 @@ cdef class PowerSeries(AlgebraElement):
         """
         denom = <PowerSeries>denom_r
         if denom.is_zero():
-            raise ZeroDivisionError, "Can't divide by something indistinguishable from 0"
+            raise ZeroDivisionError("Can't divide by something indistinguishable from 0")
         try:
             F = self._parent.fraction_field()
         except:

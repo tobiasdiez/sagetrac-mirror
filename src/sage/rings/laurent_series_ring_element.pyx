@@ -199,7 +199,7 @@ cdef class LaurentSeries(AlgebraElement):
             sage: f.is_unit()
             False
 
-        Before ticket #8972, the following used to raise an error.
+        Before :trac:`8972`, the following used to raise an error.
         But now, the inverse of any non-zero element exists, and
         the inverse is always an element of the fraction field::
 
@@ -977,7 +977,7 @@ cdef class LaurentSeries(AlgebraElement):
 
         TEST:
 
-        The following was fixed in ticket #8972::
+        The following was fixed in :trac:`8972`::
 
             sage: L.<x> = LaurentSeriesRing(ZZ)
             sage: 1/(2+x)
@@ -1429,7 +1429,7 @@ cdef class LaurentSeries(AlgebraElement):
 
         TEST:
 
-        Since ticket #8972, the fraction field of a power series ring is
+        Since :trac:`8972`, the fraction field of a power series ring is
         a Laurent series ring over the fraction field of the base ring::
 
             sage: P.<t> = ZZ[[]]

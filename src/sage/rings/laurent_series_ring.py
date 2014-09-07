@@ -51,7 +51,7 @@ def LaurentSeriesRing(base_ring, name=None, names=None, default_prec=20, sparse=
         sage: Frac(GF(5)['y'])
         Fraction Field of Univariate Polynomial Ring in y over Finite Field of size 5
 
-    After fixing ticket #8972, this also works if the base ring is not
+    After fixing :trac:`8972`, this also works if the base ring is not
     a field. In this case, the ``Frac`` constructor returns the Laurent
     series ring over the fraction field of the base ring.
 

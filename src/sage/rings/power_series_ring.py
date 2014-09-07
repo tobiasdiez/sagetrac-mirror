@@ -365,7 +365,7 @@ def PowerSeriesRing(base_ring, name=None, arg2=None, names=None,
 
     # the following is the original, univariate-only code
 
-    if isinstance(name, (int,long,integer.Integer)):
+    if isinstance(name, (int, long, integer.Integer)):
         default_prec = name
     if not names is None:
         name = names
@@ -1135,7 +1135,7 @@ class PowerSeriesRing_generic(UniqueRepresentation, commutative_ring.Commutative
 
         TEST:
 
-        The following was fixed in ticket #8972. If a Laurent
+        The following was fixed in :trac:`8972`. If a Laurent
         series is in fact a power series that can be interpreted
         in ``self`` then it is considered an element of ``self``::
 

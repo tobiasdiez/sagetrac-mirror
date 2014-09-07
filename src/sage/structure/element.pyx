@@ -224,7 +224,7 @@ def py_scalar_to_element(py):
     elif PyComplex_Check(py):
         return CDF(py)
     else:
-        raise TypeError, "Not a scalar"
+        raise TypeError("Not a scalar")
 
 def is_Element(x):
     """
@@ -738,8 +738,8 @@ cdef class Element(sage_object.SageObject):
 
 
     def __xor__(self, right):
-        raise RuntimeError, "Use ** for exponentiation, not '^', which means xor\n"+\
-              "in Python, and has the wrong precedence."
+        raise RuntimeError("Use ** for exponentiation, not '^', which means xor\n"+\
+              "in Python, and has the wrong precedence.")
 
     def __pos__(self):
         return self
@@ -951,7 +951,7 @@ cdef class Element(sage_object.SageObject):
     cdef int _cmp_c_impl(left, Element right) except -2:
         ### For derived Cython code, you *MUST* ALSO COPY the __richcmp__ above
         ### into your class!!!  For Python code just use __cmp__.
-        raise NotImplementedError, "BUG: sort algorithm for elements of '%s' not implemented"%right.parent()
+        raise NotImplementedError("BUG: sort algorithm for elements of '%s' not implemented"%right.parent())
 
 cdef inline bint _rich_to_bool(int op, int r):
     if op == Py_LT:  #<
@@ -1234,7 +1234,7 @@ cdef class ModuleElement(Element):
         return coercion_model.bin_op(left, right, add)
 
     cpdef ModuleElement _add_(left, ModuleElement right):
-        raise TypeError, arith_error_message(left, right, add)
+        raise TypeError(arith_error_message(left, right, add))
 
     def __iadd__(ModuleElement self, right):
         if have_same_parent(self, right):
@@ -1444,7 +1444,7 @@ cdef class MonoidElement(Element):
         Return the (integral) power of self.
         """
         if dummy is not None:
-            raise RuntimeError, "__pow__ dummy argument not used"
+            raise RuntimeError("__pow__ dummy argument not used")
         return generic_power_c(self,n,None)
 
     def __nonzero__(self):
@@ -1467,7 +1467,7 @@ cdef class AdditiveGroupElement(ModuleElement):
         return self.additive_order()
 
     def __invert__(self):
-        raise NotImplementedError, "multiplicative inverse not defined for additive group elements"
+        raise NotImplementedError("multiplicative inverse not defined for additive group elements")
 
     cpdef ModuleElement _rmul_(self, RingElement left):
         return self._lmul_(left)
@@ -1499,7 +1499,7 @@ cdef class MultiplicativeGroupElement(MonoidElement):
         return self.multiplicative_order()
 
     def _add_(self, x):
-        raise ArithmeticError, "addition not defined in a multiplicative group"
+        raise ArithmeticError("addition not defined in a multiplicative group")
 
     def __div__(left, right):
         if have_same_parent(left, right):
@@ -1719,7 +1719,7 @@ cdef class RingElement(ModuleElement):
         Cython classes should override this function to implement multiplication.
         See extensive documentation at the top of element.pyx.
         """
-        raise TypeError, arith_error_message(self, right, mul)
+        raise TypeError(arith_error_message(self, right, mul))
 
     def __imul__(left, right):
         if have_same_parent(left, right):
@@ -1800,7 +1800,7 @@ cdef class RingElement(ModuleElement):
 
         """
         if dummy is not None:
-            raise RuntimeError, "__pow__ dummy argument not used"
+            raise RuntimeError("__pow__ dummy argument not used")
         return generic_power_c(self,n,None)
 
     ##################################
@@ -1835,9 +1835,9 @@ cdef class RingElement(ModuleElement):
             return self._parent.fraction_field()(self, right)
         except AttributeError:
             if not right:
-                raise ZeroDivisionError, "Cannot divide by zero"
+                raise ZeroDivisionError("Cannot divide by zero")
             else:
-                raise TypeError, arith_error_message(self, right, div)
+                raise TypeError(arith_error_message(self, right, div))
         except TypeError:
             try:
                 if self._parent.fraction_field() is not self._parent:
@@ -1846,9 +1846,9 @@ cdef class RingElement(ModuleElement):
                     raise RuntimeError
             except:
                 if not right:
-                    raise ZeroDivisionError, "Cannot divide by zero"
+                    raise ZeroDivisionError("Cannot divide by zero")
                 else:
-                    raise TypeError, arith_error_message(self, right, div)
+                    raise TypeError(arith_error_message(self, right, div))
 
 
     def __idiv__(self, right):
@@ -1884,7 +1884,7 @@ cdef class RingElement(ModuleElement):
         ``ArithmeticError`` otherwise.
         """
         if not self.is_unit():
-            raise ArithmeticError, "self (=%s) must be a unit to have a multiplicative order."
+            raise ArithmeticError("self (=%s) must be a unit to have a multiplicative order.")
         raise NotImplementedError
 
     def is_nilpotent(self):
