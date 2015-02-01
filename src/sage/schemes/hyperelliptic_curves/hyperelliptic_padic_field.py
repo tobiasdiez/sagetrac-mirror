@@ -1104,12 +1104,11 @@ class HyperellipticCurve_padic_field(hyperelliptic_generic.HyperellipticCurve_ge
             sage: HJ = HK.curve_over_ram_extn(10)
             sage: S = HK.get_boundary_point(HJ,P)
             sage: HK.P_to_S(P, S)
-            (2*a + 4*a^3 + 2*a^11 + 4*a^13 + 2*a^17 + 2*a^19 + a^21 + 4*a^23 + a^25 + 2*a^27 + 2*a^29 + 3*a^31 + 4*a^33 + O(a^35), a^-5 + 2*a + 2*a^3 + a^7 + 3*a^11 + a^13 + 3*a^15 + 3*a^17 + 2*a^19 + 4*a^21 + 4*a^23 + 4*a^25 + 2*a^27 + a^29 + a^31 + O(a^33))
+            (2*a + 4*a^3 + 2*a^11 + 4*a^13 + 2*a^17 + 2*a^19 + a^21 + 4*a^23 + a^25 + 2*a^27 + 2*a^29 + 3*a^31 + 4*a^33 + O(a^35), a^-5 + 2*a + 2*a^3 + a^7 + 3*a^11 + a^13 + 3*a^15 + 3*a^17 + 2*a^19 + 4*a^21 + 4*a^23 + 4*a^25 + 2*a^27 + a^29 + O(a^31))
 
         AUTHOR:
 
         - Jennifer Balakrishnan
-
         """
         prec = self.base_ring().precision_cap()
         deg = (S[0]).parent().defining_polynomial().degree()
@@ -1199,7 +1198,7 @@ class HyperellipticCurve_padic_field(hyperelliptic_generic.HyperellipticCurve_ge
             sage: P_to_S = HK.P_to_S(P,S)
             sage: S_to_Q = HJ.S_to_Q(S,Q)
             sage: P_to_S + S_to_Q
-            (2*a^40 + a^80 + a^100 + O(a^105), a^20 + 2*a^40 + 4*a^60 + 2*a^80 + O(a^103))
+            (2*a^40 + a^80 + a^100 + O(a^105), a^20 + 2*a^40 + 4*a^60 + 2*a^80 + O(a^101))
             sage: HK.coleman_integrals_on_basis(P,Q)
             (2*5^2 + 5^4 + 5^5 + 3*5^6 + O(5^7), 5 + 2*5^2 + 4*5^3 + 2*5^4 + 5^6 + O(5^7))
 
@@ -1283,8 +1282,8 @@ class HyperellipticCurve_padic_field(hyperelliptic_generic.HyperellipticCurve_ge
             sage: S = HK.get_boundary_point(HJ,P)
             sage: P_to_S = HK.coleman_integral_P_to_S(y.diff(),P,S)
             sage: S_to_Q = HJ.coleman_integral_S_to_Q(y.diff(),S,Q)
-            sage: P_to_S  + S_to_Q
-            3 + O(a^119)
+            sage: P_to_S + S_to_Q
+            3 + O(a^120)
             sage: HK.coleman_integral(y.diff(),P,Q)
             3 + O(5^6)
 
@@ -1336,7 +1335,7 @@ class HyperellipticCurve_padic_field(hyperelliptic_generic.HyperellipticCurve_ge
             sage: Q = HK(0,3)
             sage: x,y = HK.monsky_washnitzer_gens()
             sage: HK.coleman_integral_from_weierstrass_via_boundary(y.diff(),P,Q,20)
-            3 + O(a^119)
+            3 + O(a^120)
             sage: HK.coleman_integral(y.diff(),P,Q)
             3 + O(5^6)
             sage: w = HK.invariant_differential()
