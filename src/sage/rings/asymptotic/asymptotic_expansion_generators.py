@@ -176,6 +176,10 @@ class AsymptoticExpansionGenerators(SageObject):
             ...
             ValueError: precision must be at least 3
         """
+        if precision is None:
+            from sage.misc.defaults import series_precision
+            precision = series_precision()
+
         if precision < 3:
             raise ValueError("precision must be at least 3")
         log_Stirling = AsymptoticExpansionGenerators.log_Stirling(
