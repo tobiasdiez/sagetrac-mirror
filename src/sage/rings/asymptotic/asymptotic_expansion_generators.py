@@ -571,6 +571,10 @@ class AsymptoticExpansionGenerators(SageObject):
             raise combine_exceptions(
                 TypeError('Cannot use k={}.'.format(k)), e)
 
+        if precision is None:
+            from sage.misc.defaults import series_precision
+            precision = series_precision()
+
         S = AsymptoticExpansionGenerators._log_StirlingNegativePowers_(
                 var, precision=max(precision - 2,0))
         n = S.parent().gen()
