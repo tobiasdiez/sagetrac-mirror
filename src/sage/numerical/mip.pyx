@@ -446,9 +446,6 @@ cdef class MixedIntegerLinearProgram(SageObject):
         if not maximization:
             self._backend.set_sense(-1)
 
-        # Associates an index to the variables
-        self._variables = {}
-
         # Check for redundant constraints
         self._check_redundant = check_redundant
         if check_redundant:
@@ -568,8 +565,6 @@ cdef class MixedIntegerLinearProgram(SageObject):
 
         cdef MixedIntegerLinearProgram p = \
             MixedIntegerLinearProgram(solver=copying_solver)
-
-        p._variables = copy(self._variables)
 
         if self._default_mipvariable is not None:
             p._default_mipvariable = self._default_mipvariable.copy_for_mip(p)
@@ -1437,6 +1432,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
             ...
             ValueError: ...
         """
+        from sage.numerical.linear_functions import is_LinearFunction
         val = []
         for l in lists:
             if isinstance(l, MIPVariable):
@@ -1444,7 +1440,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
                     raise ValueError("Variable {!r} is a variable from a different problem".format(l))
                 c = {}
                 for (k,v) in l.items():
-                    c[k] = self._backend.get_variable_value(self._variables[v])
+                    c[k] = self._backend.get_variable_value(self._linear_variable_index(v))
                 val.append(c)
             elif isinstance(l, list):
                 if len(l) == 1:
@@ -1453,8 +1449,8 @@ cdef class MixedIntegerLinearProgram(SageObject):
                     c = []
                     [c.append(self.get_values(ll)) for ll in l]
                     val.append(c)
-            elif l in self._variables:
-                val.append(self._backend.get_variable_value(self._variables[l]))
+            elif is_LinearFunction(l):
+                val.append(self._backend.get_variable_value(self._linear_variable_index(l)))
             else:
                 raise TypeError("Not a MIPVariable: {!r}".format(l))
 
@@ -1954,6 +1950,42 @@ cdef class MixedIntegerLinearProgram(SageObject):
             self._constraints.pop(i)
         self._backend.remove_constraints(constraints)
 
+    def _set_variable_type(self, ee, vartype):
+        r"""
+        Sets a variable or a ``MIPVariable`` as binary, integer, or real.
+
+        INPUT:
+
+        - ``ee`` -- An instance of ``MIPVariable`` or one of
+          its elements.
+
+        - ``vartype`` -- One of ``__BINARY``, ``__INTEGER``, ``__REAL``.
+
+        EXAMPLE::
+
+            sage: p = MixedIntegerLinearProgram(solver='GLPK')
+            sage: x = p.new_variable(nonnegative=True)
+
+        With the following instruction, all the variables
+        from x will be binary::
+
+            sage: p._set_variable_type(x, 0)  # __BINARY (not accessible here)
+            sage: p.set_objective(x[0] + x[1])
+            sage: p.add_constraint(-3*x[0] + 2*x[1], max=2)
+        """
+        from sage.numerical.linear_functions import is_LinearFunction
+        cdef MIPVariable e
+        e = <MIPVariable> ee
+
+        if isinstance(e, MIPVariable):
+            e._vtype = vartype
+            for v in e.values():
+                self._backend.set_variable_type(self._linear_variable_index(v), vartype)
+        elif is_LinearFunction(e):
+            self._backend.set_variable_type(self._linear_variable_index(e), vartype)
+        else:
+            raise ValueError("e must be an instance of MIPVariable or one of its elements.")
+
     def set_binary(self, ee):
         r"""
         Sets a variable or a ``MIPVariable`` as binary.
@@ -1981,17 +2013,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
             sage: p.set_integer(x[3])
 
         """
-        cdef MIPVariable e
-        e = <MIPVariable> ee
-
-        if isinstance(e, MIPVariable):
-            e._vtype = self.__BINARY
-            for v in e.values():
-                self._backend.set_variable_type(self._variables[v],self.__BINARY)
-        elif e in self._variables:
-            self._backend.set_variable_type(self._variables[e],self.__BINARY)
-        else:
-            raise ValueError("e must be an instance of MIPVariable or one of its elements.")
+        self._set_variable_type(ee, self.__BINARY)
 
     def is_binary(self, e):
         r"""
@@ -2017,7 +2039,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
             sage: p.is_binary(v[1])
             True
         """
-        return self._backend.is_variable_binary(self._variables[e])
+        return self._backend.is_variable_binary(self._linear_variable_index(e))
 
     def set_integer(self, ee):
         r"""
@@ -2045,17 +2067,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
 
             sage: p.set_binary(x[3])
         """
-        cdef MIPVariable e
-        e = <MIPVariable> ee
-
-        if isinstance(e, MIPVariable):
-            e._vtype = self.__INTEGER
-            for v in e.values():
-                self._backend.set_variable_type(self._variables[v],self.__INTEGER)
-        elif e in self._variables:
-            self._backend.set_variable_type(self._variables[e],self.__INTEGER)
-        else:
-            raise ValueError("e must be an instance of MIPVariable or one of its elements.")
+        self._set_variable_type(ee, self.__INTEGER)
 
     def is_integer(self, e):
         r"""
@@ -2081,9 +2093,9 @@ cdef class MixedIntegerLinearProgram(SageObject):
             sage: p.is_integer(v[1])
             True
         """
-        return self._backend.is_variable_integer(self._variables[e])
+        return self._backend.is_variable_integer(self._linear_variable_index(e))
 
-    def set_real(self,ee):
+    def set_real(self, ee):
         r"""
         Sets a variable or a ``MIPVariable`` as real.
 
@@ -2110,19 +2122,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
             sage: p.set_binary(x[3])
 
         """
-        cdef MIPVariable e
-        e = <MIPVariable> ee
-
-        if isinstance(e, MIPVariable):
-            e._vtype = self.__REAL
-            for v in e.values():
-                self._backend.set_variable_type(self._variables[v],self.__REAL)
-                self._backend.variable_lower_bound(self._variables[v], 0)
-        elif e in self._variables:
-            self._backend.set_variable_type(self._variables[e],self.__REAL)
-            self._backend.variable_lower_bound(self._variables[e], 0)
-        else:
-            raise ValueError("e must be an instance of MIPVariable or one of its elements.")
+        self._set_variable_type(ee, self.__REAL)
 
     def is_real(self, e):
         r"""
@@ -2150,7 +2150,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
             sage: p.is_real(v[1])
             True
         """
-        return self._backend.is_variable_continuous(self._variables[e])
+        return self._backend.is_variable_continuous(self._linear_variable_index(e))
 
     def solve(self, log=None, objective_only=False):
         r"""
@@ -2274,7 +2274,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
         try:
             v.set_min(min)
         except AttributeError:
-            self._backend.variable_lower_bound(self._variables[v], min)
+            self._backend.variable_lower_bound(self._linear_variable_index(v), min)
 
     def set_max(self, v, max):
         r"""
@@ -2311,7 +2311,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
         try:
             v.set_max(max)
         except AttributeError:
-            self._backend.variable_upper_bound(self._variables[v], max)
+            self._backend.variable_upper_bound(self._linear_variable_index(v), max)
 
     def get_min(self, v):
         r"""
@@ -2342,7 +2342,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
         try:
             return (<MIPVariable?>v)._lower_bound
         except TypeError:
-            return self._backend.variable_lower_bound(self._variables[v])
+            return self._backend.variable_lower_bound(self._linear_variable_index(v))
 
     def get_max(self, v):
         r"""
@@ -2370,7 +2370,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
         try:
             return (<MIPVariable?>v)._upper_bound
         except TypeError:
-            return self._backend.variable_upper_bound(self._variables[v])
+            return self._backend.variable_upper_bound(self._linear_variable_index(v))
 
     def solver_parameter(self, name, value = None):
         """
@@ -2923,7 +2923,6 @@ cdef class MIPVariable(Element):
             obj=zero,
             name=name)
         v = self._p.linear_function({j : 1})
-        self._p._variables[v] = j
         self._p._backend.set_variable_type(j, self._vtype)
         self._dict[i] = v
         return v
