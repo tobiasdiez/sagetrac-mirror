@@ -63,6 +63,7 @@ List of Poset methods
     :meth:`~FinitePoset.width` | Return the number of elements in a longest antichain of the poset.
     :meth:`~FinitePoset.relations_number` | Return the number of relations in the poset.
     :meth:`~FinitePoset.dimension` | Return the dimension of the poset.
+    :meth:`~FinitePoset.jump_number` | Return the jump number of the poset.
     :meth:`~FinitePoset.has_bottom` | Return ``True`` if the poset has a unique minimal element.
     :meth:`~FinitePoset.has_top` | Return ``True`` if the poset has a unique maximal element.
     :meth:`~FinitePoset.is_bounded` | Return ``True`` if the poset has both unique minimal and unique maximal element.
@@ -104,6 +105,7 @@ List of Poset methods
     :meth:`~FinitePoset.with_bounds` | Return the poset with bottom and top element adjoined.
     :meth:`~FinitePoset.dual` | Return the dual of the poset.
     :meth:`~FinitePoset.completion_by_cuts` | Return the Dedekind-MacNeille completion of the poset.
+    :meth:`~FinitePoset.intervals_poset` | Return the poset of intervals of the poset.
     :meth:`~FinitePoset.connected_components` | Return the connected components of the poset as subposets.
     :meth:`~FinitePoset.ordinal_summands` | Return the ordinal summands of the poset.
     :meth:`~FinitePoset.subposet` | Return the subposet containing elements with partial order induced by this poset.
@@ -242,6 +244,8 @@ Classes and functions
 #*****************************************************************************
 # python3
 from __future__ import division, print_function, absolute_import
+
+from six import itervalues
 
 import copy
 from sage.misc.cachefunc import cached_method
@@ -1757,7 +1761,7 @@ class FinitePoset(UniqueRepresentation, Parent):
                                for (element, label) in element_labels.items())
             graph = graph.relabel(relabeling, inplace = False)
             if heights is not None:
-                for key in heights.keys():
+                for key in heights:
                     heights[key] = [relabeling[i] for i in heights[key]]
 
         if cover_labels is not None:
@@ -1951,6 +1955,67 @@ class FinitePoset(UniqueRepresentation, Parent):
         return list(self.relations_iterator())
 
     intervals = deprecated_function_alias(19360, relations)
+
+    def intervals_poset(self):
+        """
+        Return the natural partial order on the set of intervals of the poset.
+
+        OUTPUT:
+
+        a finite poset
+
+        The poset of intervals of a poset `P` has the set of intervals `[x,y]`
+        in `P` as elements, endowed with the order relation defined by
+        `[x_1,y_1] \leq [x_2,y_2]` if and only if `x_1 \leq x_2` and
+        `y_1 \leq y_2`.
+
+        This is also called `P` to the power *2*, meaning
+        the poset of poset-morphisms from the 2-chain to `P`.
+
+        If `P` is a lattice, the result is also a lattice.
+
+        EXAMPLES::
+
+            sage: P = Poset({0:[1]})
+            sage: P.intervals_poset()
+            Finite poset containing 3 elements
+
+            sage: P = posets.PentagonPoset()
+            sage: P.intervals_poset()
+            Finite lattice containing 13 elements
+
+        TESTS::
+
+            sage: P = Poset({})
+            sage: P.intervals_poset()
+            Finite poset containing 0 elements
+
+            sage: P = Poset({0:[]})
+            sage: P.intervals_poset()
+            Finite poset containing 1 elements
+
+            sage: P = Poset({0:[], 1:[]})
+            sage: P.intervals_poset().is_isomorphic(P)
+            True
+        """
+        from sage.combinat.posets.lattices import (LatticePoset,
+                                                   FiniteLatticePoset)
+        if isinstance(self, FiniteLatticePoset):
+            constructor = LatticePoset
+        else:
+            constructor = Poset
+
+        ints = [tuple(u) for u in self.relations()]
+
+        covers = []
+        for (a, b) in ints:
+            covers.extend([[(a, b), (a, bb)] for bb in self.upper_covers(b)])
+            if a != b:
+                covers.extend([[(a, b), (aa, b)] for aa in self.upper_covers(a)
+                               if self.le(aa, b)])
+
+        dg = DiGraph([ints, covers], format="vertices_and_edges")
+        return constructor(dg, cover_relations=True)
 
     def relations_iterator(self, strict=False):
         r"""
@@ -2918,6 +2983,76 @@ class FinitePoset(UniqueRepresentation, Parent):
             return [[self._list[i] for i in l]
                     for l in linear_extensions]
         return k
+
+    def jump_number(self, certificate=False):
+        """
+        Return the jump number of the poset.
+
+        A *jump* in a linear extension `[e_1, \ldots, e_n]` of a poset `P`
+        is a pair `(e_i, e_{i+1})` so that `e_{i+1}` does not cover `e_i`
+        in `P`. The jump number of a poset is the minimal number of jumps
+        in linear extensions of a poset.
+
+        INPUT:
+
+        - ``certificate`` -- (default: ``False``) Whether to return
+          a certificate
+
+        OUTPUT:
+
+        - If ``certificate=True`` return a pair `(n, l)` where
+          `n` is the jump number and `l` is a linear extension
+          with `n` jumps. If ``certificate=False`` return only
+          the jump number.
+
+        EXAMPLES::
+
+            sage: B3 = Posets.BooleanLattice(3)
+            sage: B3.jump_number()
+            3
+
+            sage: N = Poset({1: [3, 4], 2: [3]})
+            sage: N.jump_number(certificate=True)
+            (1, [1, 4, 2, 3])
+
+        REFERENCES:
+
+        .. [BIANCO] L. Bianco, P. Dell‘Olmo, S. Giordani
+           An Optimal Algorithm to Find the Jump Number of Partially Ordered Sets
+           Computational Optimization and Applications,
+           1997, Volume 8, Issue 2, pp 197--210,
+           :doi:`10.1023/A:1008625405476`
+
+        TESTS::
+
+            sage: E = Poset()
+            sage: E.jump_number(certificate=True)
+            (0, [])
+
+            sage: C4 = Posets.ChainPoset(4)
+            sage: A4 = Posets.AntichainPoset(4)
+            sage: C4.jump_number()
+            0
+            sage: A4.jump_number()
+            3
+        """
+        H = self._hasse_diagram
+        jumps_min = H.order()  # = "Infinity"
+
+        for lin_ext in H.topological_sort_generator():
+            jumpcount = 0
+            for a, b in zip(lin_ext, lin_ext[1:]):
+                if not H.has_edge(a, b):
+                    jumpcount += 1
+                    if jumpcount >= jumps_min:
+                        break
+            else:
+                jumps_min = jumpcount
+                best_le = lin_ext
+
+        if certificate:
+            return (jumps_min, [self._vertex_to_element(v) for v in best_le])
+        return jumps_min
 
     def rank_function(self):
         r"""
@@ -4503,11 +4638,16 @@ class FinitePoset(UniqueRepresentation, Parent):
                            elements=elements, category=self.category(),
                            facade=self._is_facade)
 
-    def canonical_label(self):
+    def canonical_label(self, algorithm=None):
         """
         Return the unique poset on the labels `\{0, \ldots, n-1\}` (where `n`
         is the number of elements in the poset) that is isomorphic to this
         poset and invariant in the isomorphism class.
+
+        INPUT:
+
+        - ``algorithm``, a string or ``None`` -- a parameter forwarded
+          to underlying graph function to select the algorithm to use
 
         .. SEEALSO::
 
@@ -4552,8 +4692,14 @@ class FinitePoset(UniqueRepresentation, Parent):
 
             sage: Poset().canonical_label()  # Test the empty poset
             Finite poset containing 0 elements
+
+            sage: D2 = Posets.DiamondPoset(4).canonical_label(algorithm='bliss')  # optional: bliss
+            sage: B2 = Posets.BooleanLattice(2).canonical_label(algorithm='bliss')  # optional: bliss
+            sage: D2 == B2  # optional: bliss
+            True
         """
-        canonical_label = self._hasse_diagram.canonical_label(certificate=True)[1]
+        canonical_label = self._hasse_diagram.canonical_label(certificate=True,
+                                                              algorithm=algorithm)[1]
         canonical_label = {self._elements[v]:i for v,i in canonical_label.iteritems()}
         return self.relabel(canonical_label)
 
@@ -5921,8 +6067,8 @@ class FinitePoset(UniqueRepresentation, Parent):
             d = {}
             for y in self.upper_covers(x):
                 for c in self.upper_covers(y):
-                    d[c] = d.get(c,0) + 1
-            if not all( y < 3 for y in d.itervalues() ):
+                    d[c] = d.get(c, 0) + 1
+            if not all(y < 3 for y in itervalues(d)):
                 return False
         return True
 
@@ -6775,7 +6921,7 @@ def _ford_fulkerson_chronicle(G, s, t, a):
         # X: list of vertices of G' reachable from s, along with
         # the shortest paths from s to them.
         X = Gprime.shortest_paths(s)
-        if t in X.keys():
+        if t in X:
             # Step MC2a in Britz-Fomin, Algorithm 7.2.
             shortest_path = X[t]
             shortest_path_in_edges = zip(shortest_path[:-1],shortest_path[1:])

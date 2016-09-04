@@ -21,7 +21,7 @@ command inside Sage::
 
     sage: from sage.misc.package import list_packages
     sage: pkgs = list_packages(local=True)
-    sage: sorted(pkgs.keys())
+    sage: sorted(pkgs.keys())  # random
     ['4ti2',
      'alabaster',
      'arb',
@@ -145,7 +145,7 @@ def pip_installed_packages():
         '...'
     """
     proc = subprocess.Popen(["pip", "list"], stdout=subprocess.PIPE)
-    stdout = proc.communicate()[0]
+    stdout = str(proc.communicate()[0])
     return dict((name.lower(), version) for name,version in PIP_VERSION.findall(stdout))
 
 def list_packages(*pkg_types, **opts):
@@ -176,7 +176,7 @@ def list_packages(*pkg_types, **opts):
 
         sage: from sage.misc.package import list_packages
         sage: L = list_packages('standard')
-        sage: sorted(L.keys())
+        sage: sorted(L.keys())  # random
         ['alabaster',
          'arb',
          'atlas',
@@ -217,31 +217,33 @@ def list_packages(*pkg_types, **opts):
 
     pkgs = {}
     for p in os.listdir(SAGE_PKGS):
-        if not os.path.isfile(os.path.join(SAGE_PKGS, p, "type")):
+        try:
+            f = open(os.path.join(SAGE_PKGS, p, "type"))
+        except IOError:
+            # Probably an empty directory => ignore
             continue
 
-        pkg = {'name': p}
-        with open(os.path.join(SAGE_PKGS, p, "type")) as f:
-            pkg['type'] = f.read().strip()
+        with f:
+            typ = f.read().strip()
 
-        if pkg['type'] not in pkg_types:
+        if typ not in pkg_types:
             continue
 
-        pkg['installed_version'] = installed.get(p)
+        pkg = {'name': p, 'type': typ, 'installed_version': installed.get(p)}
         pkg['installed'] = pkg['installed_version'] is not None
 
-        package_filename = os.path.join(SAGE_PKGS, p, "package-version.txt")
         if pkg['type'] == 'pip':
             if not local:
                 pkg['remote_version'] = pip_remote_version(p, ignore_URLError=ignore_URLError)
             else:
                 pkg['remote_version'] = None
-        elif os.path.isfile(package_filename):
+        else:
+            # If package-version.txt does not exist, that is an error
+            # in the build system => we just propagate the exception
+            package_filename = os.path.join(SAGE_PKGS, p, "package-version.txt")
             with open(package_filename) as f:
                 pkg['remote_version'] = f.read().strip()
             pkg['installed_version'] = installed.get(p)
-        else:
-            raise RuntimeError
 
         pkgs[p] = pkg
 
