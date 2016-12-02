@@ -9,6 +9,15 @@ precision.
 The main purpose of these classes is to provide a place for exact rings (e.g.
 number fields) to embed for the coercion model (as only one embedding can be
 specified in the forward direction).
+
+TESTS::
+
+Bug :trac:`21991`::
+
+    sage: a = QuadraticField(5).gen()
+    sage: u = -573147844013817084101/2*a + 1281597540372340914251/2
+    sage: RealIntervalField(128)(RLF(u)).is_exact()
+    False
 """
 
 #*****************************************************************************
@@ -811,7 +820,7 @@ cdef class LazyFieldElement(FieldElement):
         """
         return self.eval(R)
 
-    _mpfi_ = _mpfr_ = _complex_mpfr_field_ = _complex_mpfi_field_ = _generic_
+    _real_mpfi_ = _mpfr_ = _complex_mpfr_field_ = _complex_mpfi_field_ = _generic_
 
     def __complex__(self):
         """
