@@ -358,7 +358,7 @@ def Fan(cones, rays=None, lattice=None, check=True, normalize=True,
 
     - ``allow_arrangement`` -- by default (``allow_arrangement=False``),
       the fan constructor expects that the intersection of any two given cones is
-      a face of each. If ``allow_arrangment=True`` option is specified, then
+      a face of each. If ``allow_arrangement=True`` option is specified, then
       construct a rational polyhedralfan from the cone arrangement, so that the
       union of the cones in the polyhedral fan equals to the union of the given
       cones, and each given cone is the union of some cones in the polyhedral fan.
