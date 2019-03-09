@@ -35,7 +35,7 @@ Class for manipulation of formal Dirichlet series
             1 + -1/(2^s) + -1/(3^s) + -1/(5^s) + 1/(6^s) + -1/(7^s) + O(8^(-s))
 """
 
-#*****************************************************************************
+# ****************************************************************************
 #       Copyright (C) 2011 Jonathan Hanke
 #       Copyright (C) 2015-2017 Ralf Stephan <ralf@ark.in-berlin.de>
 #
@@ -48,9 +48,10 @@ Class for manipulation of formal Dirichlet series
 #
 #  The full text of the GPL is available at:
 #
-#                  http://www.gnu.org/licenses/
-#*****************************************************************************
+#                  https://www.gnu.org/licenses/
+# ****************************************************************************
 
+from sage.categories.rings import Rings
 from sage.structure.sage_object import SageObject
 from sage.structure.element import parent
 from sage.interfaces.gp import gp
@@ -58,13 +59,12 @@ from sage.libs.pari.all import pari
 from sage.rings.infinity import Infinity
 from sage.rings.integer_ring import ZZ
 from sage.rings.integer import Integer
-from sage.rings.rational import Rational
-from sage.rings.real_mpfr import RR
 from sage.misc.defaults import series_precision
 from sage.symbolic.expression import Expression
 from sage.symbolic.function import BuiltinFunction
 from sage.symbolic.ring import SR
 from sage.functions.transcendental import zeta
+
 
 class DirichletLFunction(BuiltinFunction):
     """
@@ -96,7 +96,9 @@ class DirichletLFunction(BuiltinFunction):
         self._index = index
         return None
 
+
 dirichlet_L = DirichletLFunction()
+
 
 class DirichletSeries(SageObject):
     """
@@ -178,14 +180,14 @@ class DirichletSeries(SageObject):
             ...
             NotImplementedError: Cannot construct Dirichlet series ...
         """
-        if not hasattr(base_ring, 'is_ring') or not base_ring.is_ring():
+        if base_ring in Rings():
             raise TypeError("The base_ring argument must be a ring!")
-        
+
         self._creation_function_expression = None
         self._var = SR.var('s')
         if not isinstance(arg, list):
             if SR(arg).is_integer():
-                self._factors = [(base_ring(arg),1)]
+                self._factors = [(base_ring(arg), 1)]
             elif isinstance(arg, Expression):
                 vars = arg.variables()
                 if len(vars) != 1:
@@ -230,7 +232,7 @@ class DirichletSeries(SageObject):
         """
         ok = True
         try:
-            for f,exp in self._factors:
+            for f, exp in self._factors:
                 ok = ok and (SR(f).is_integer()
                      or dirichlet_series._is_zeta_expr(f, self._var)
                      or dirichlet_series._is_dirichlet_L_expr(f, self._var)
@@ -257,10 +259,10 @@ class DirichletSeries(SageObject):
         """
         if not self.has_infinite_precision():
             return self._coeffs
-        product = [self._base_ring(1)] + [0] * (precision-1)
-        for f,exp in self._factors:
+        product = [self._base_ring(1)] + [0] * (precision - 1)
+        for f, exp in self._factors:
             if SR(f).is_integer():
-                fseries = [self._base_ring(f)] + [0] * (precision-1)
+                fseries = [self._base_ring(f)] + [0] * (precision - 1)
             elif dirichlet_series._is_zeta_expr(f, self._var):
                 fseries = dirichlet_series._zeta_expr(f, self._var, precision)
             elif dirichlet_series._is_dirichlet_L_expr(f, self._var):
@@ -305,9 +307,10 @@ class DirichletSeries(SageObject):
             sage: dirichlet_series._mask_exp_factors(1/(1-2^(-s))^2*(1-3^(-s+2)))
             dummy(3, -s + 2)/dummy(2, -s)^2
         """
-        w0 = SR.wild(0); w1 = SR.wild(1)
-        ex = ex.subs(1-w0**w1 == dirichlet_series.MaskFunction()(w0, w1))
-        ex = ex.subs(w0**w1-1 == -dirichlet_series.MaskFunction()(w0, w1))
+        w0 = SR.wild(0)
+        w1 = SR.wild(1)
+        ex = ex.subs(1 - w0**w1 == dirichlet_series.MaskFunction()(w0, w1))
+        ex = ex.subs(w0**w1 - 1 == -dirichlet_series.MaskFunction()(w0, w1))
         return ex
 
     @staticmethod
@@ -345,8 +348,9 @@ class DirichletSeries(SageObject):
             arg = ex.operands()[0]
             if bool(arg == 1) or bool(arg == var):
                 return True
-            w0 = SR.wild(0); w1 = SR.wild(1)
-            d = arg.match(w0*var)
+            w0 = SR.wild(0)
+            w1 = SR.wild(1)
+            d = arg.match(w0 * var)
             if d is not None:
                 factor = d.values()[0]
                 return factor.is_integer() and bool(factor > 1)
@@ -354,7 +358,7 @@ class DirichletSeries(SageObject):
             if d is not None:
                 summand = d.values()[0]
                 return summand.is_integer()
-            d = arg.match(w0*var+w1)
+            d = arg.match(w0*var + w1)
             if d is not None:
                 factor = d.get(w0)
                 summand = d.get(w1)
@@ -394,7 +398,8 @@ class DirichletSeries(SageObject):
             sage: assert(not dirichlet_series._is_exp_expr(dummy(s, -s+1), s))
         """
         from sage.symbolic.operators import add_vararg
-        w0 = SR.wild(0); w1 = SR.wild(1)
+        w0 = SR.wild(0)
+        w1 = SR.wild(1)
         dummy = dirichlet_series.MaskFunction()
         d = ex.match(dummy(w0, w1))
         if d is None:
@@ -426,7 +431,7 @@ class DirichletSeries(SageObject):
         """
         from sage.modular.dirichlet import DirichletGroup
         dg = DirichletGroup(m)
-        period = dg.list()[r-1].values()
+        period = dg.list()[r - 1].values()
         l = len(period)
         period = [R(elem) for elem in period]
         period = period[1:] + [R(0)]
@@ -455,18 +460,19 @@ class DirichletSeries(SageObject):
         arg = ex.operands()[0]
         if bool(arg == var):
             return [1] * prec
-        w0 = SR.wild(0); w1 = SR.wild(1)
-        d = arg.match(w0*var)
+        w0 = SR.wild(0)
+        w1 = SR.wild(1)
+        d = arg.match(w0 * var)
         if d is not None:
             factor = d.values()[0]
             paricmd = "direuler(p=1,{0},1/(1-X^{1}))".format(prec, factor)
             return gp(paricmd)
-        d = arg.match(var+w0)
+        d = arg.match(var + w0)
         if d is not None:
             summand = d.values()[0]
             paricmd = "direuler(p=1,{0},1/(1-p^{1}*X))".format(prec, -summand)
             return gp(paricmd)
-        d = arg.match(w0*var+w1)
+        d = arg.match(w0 * var + w1)
         if d is not None:
             factor = d.get(w0)
             summand = d.get(w1)
@@ -491,7 +497,7 @@ class DirichletSeries(SageObject):
             sage: dirichlet_series._dirichlet_L_expr(dirichlet_L(9,0,s), 9, CyclotomicField(9))
             [1, -zeta9^3, 0, -zeta9^3 - 1, zeta9^3 + 1, 0, zeta9^3, -1, 0]
         """
-        m,r,_ = ex.operands()
+        m, r, _ = ex.operands()
         return dirichlet_series._Lseries_coeff(m, r, prec, R)
 
     @staticmethod
@@ -511,7 +517,8 @@ class DirichletSeries(SageObject):
             sage: dirichlet_series._exp_expr(dummy(3, -s+1), 9)
             [1, 0, 3, 0, 0, 0, 0, 0, 9]
         """
-        w0 = SR.wild(0); w1 = SR.wild(1)
+        w0 = SR.wild(0)
+        w1 = SR.wild(1)
         dummy = dirichlet_series.MaskFunction()
         d1 = ex.match(dummy(w0, w1))
         arg1 = d1.get(w0)
@@ -520,7 +527,7 @@ class DirichletSeries(SageObject):
         if arg2 == -var:
             paricmd = "direuler(p=1,{0},if(p=={1},1/(1-X),1))".format(prec, arg1)
             return gp(paricmd)
-        d2 = arg2.match(-var+w0)
+        d2 = arg2.match(-var + w0)
         summand = d2.values()[0]
         paricmd = "direuler(p=1,{0},if(p=={1},1/(1-p^{2}*X),1))".format(prec, arg1, summand)
         return gp(paricmd)
@@ -583,7 +590,7 @@ class DirichletSeries(SageObject):
             1 + -1/(2^s) + 1/(4^s) + -1/(5^s) + 1/(7^s) + ... + O(20^(-s))
         """
         out_str = ""
-        n_prec = min(self._precision, n_max+1) - 1
+        n_prec = min(self._precision, n_max + 1) - 1
         if self.has_infinite_precision():
             coeffs = self._eval(n_prec)
         else:
@@ -596,12 +603,12 @@ class DirichletSeries(SageObject):
 
         ## Add all other non-zero coefficients up to the desired precision
         for i in range(1, n_prec):
-            if (coeffs[i] != 0):
+            if coeffs[i] != 0:
                 out_str += " + " + str(coeffs[i]) + "/(" + str(i+1) + "^" + str(self._var) + ")"
-            
+
         ## Add the error term, if the result has infinite precision.
         out_str += " + O(" + str(n_prec + 1) + "^(-" + str(self._var) + "))"
-            
+
         ## Return the output string
         return out_str
 
@@ -761,15 +768,15 @@ class DirichletSeries(SageObject):
                                     base_ring=self._base_ring)
         else:
             if n == 0:
-                return dirichlet_series([1] + [0]*(len(self._coeffs)-1))
+                return dirichlet_series([1] + [0] * (len(self._coeffs) - 1))
             elif n > 0:
                 tmp_new_series = self
-                for i in range(n-1):
+                for i in range(n - 1):
                     tmp_new_series = tmp_new_series * self
             elif n < 0:
                 inv_series = self.inverse()
                 tmp_new_series = inv_series
-                for i in range(abs(n)-1):
+                for i in range(abs(n) - 1):
                     tmp_new_series = tmp_new_series * inv_series
             return tmp_new_series
 
@@ -795,7 +802,6 @@ class DirichletSeries(SageObject):
             ...
             RuntimeError: The leading term is not invertible ...
         """
-        from sage.arith.misc import divisors
         R = self.base_ring()
 
         if self.has_infinite_precision():
@@ -808,5 +814,6 @@ class DirichletSeries(SageObject):
                 raise RuntimeError("The leading term is not invertible in the base ring, so the Dirichlet series is not invertible.")
             new_coeff_list = pari([1]+[0]*len(self._coeffs)).dirdiv(self.list()).sage()
             return dirichlet_series(new_coeff_list)
+
 
 dirichlet_series = DirichletSeries
