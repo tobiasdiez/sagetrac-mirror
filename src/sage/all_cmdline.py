@@ -24,6 +24,9 @@ del absolute_import, division, print_function
 sage_mode = 'cmdline'
 
 from sage.all import *
+from sage.misc.lazy_import import clean_namespace
+clean_namespace(globals())
+del clean_namespace
 from sage.calculus.predefined import x
 
 sage.misc.session.init()

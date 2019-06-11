@@ -59,6 +59,7 @@ AUTHORS:
 # (at your option) any later version.
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
+from sage.misc.lazy_import import clean_namespace
 
 
 user_globals = None
@@ -156,7 +157,7 @@ def initialize_globals(all, g=None):
     for key in dir(all):
         if key[0] != '_':
             user_globals[key] = getattr(all, key)
-
+    clean_namespace(user_globals)
 
 def get_global(name):
     """

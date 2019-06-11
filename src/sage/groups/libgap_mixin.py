@@ -11,7 +11,9 @@ from. This ensures that it properly overrides any default methods that
 just raise ``NotImplementedError``.
 """
 
-from sage.libs.all import libgap
+from sage.misc.lazy_import import lazy_import
+lazy_import('sage.libs.gap.libgap', 'libgap')
+
 from sage.misc.cachefunc import cached_method
 from sage.groups.class_function import ClassFunction_libgap
 from sage.misc.superseded import deprecated_function_alias

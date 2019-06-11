@@ -322,6 +322,7 @@ set_random_seed()
 
 
 # From now on it is ok to resolve lazy imports
+sage.misc.lazy_import.clean_namespace(globals())
 sage.misc.lazy_import.finish_startup()
 
 def sage_globals():
