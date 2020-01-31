@@ -1,4 +1,5 @@
 AC_DEFUN([SAGE_SPKG_ENABLE], [
+  AC_REQUIRE([SAGE_SPKG_INIT])
   m4_pushdef([SPKG_NAME], [$1])
   m4_pushdef([SPKG_TYPE], [$2])
   AC_ARG_ENABLE(SPKG_NAME,

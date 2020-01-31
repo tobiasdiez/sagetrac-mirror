@@ -75,19 +75,36 @@ install_config_rpath() {
 bootstrap () {
     rm -f m4/sage_spkg_configures.m4
     spkg_configures=""
-    for filename in $(find build/pkgs -type f -name spkg-configure.m4 | sort); do
+    for dir in build/pkgs/*; do
+        if [ ! -d $dir ]; then
+            continue
+        fi
+        filename=$dir/spkg-configure.m4
         pkgname="$(echo $filename | cut -d/ -f3)"
-        echo "m4_sinclude([$filename])" >> m4/sage_spkg_configures.m4
-        spkg_configures="$spkg_configures
+        if [ -r $filename ]; then
+            echo "m4_sinclude([$filename])" >> m4/sage_spkg_configures.m4
+            spkg_configures="$spkg_configures
 SAGE_SPKG_CONFIGURE_$(echo ${pkgname} | tr '[a-z]' '[A-Z]')"
-    done
-    for filename in $(find build/pkgs -type f -name type); do
+        fi
+        filename=$dir/type
+        if [ ! -r $filename ]; then
+            echo >&2 "bootstrap: warning: $filename is missing. Leftovers from another branch?"
+            continue
+        fi
         pkgtype="$(cat $filename)"
-        pkgname="$(echo $filename | cut -d/ -f3)"
+        spkg_configures="$spkg_configures
+SAGE_SPKG([$pkgname])"
         case "$pkgtype" in
+            base|standard|script|pip)
+                ;;
             optional|experimental)
                 spkg_configures="$spkg_configures
-SAGE_SPKG_ENABLE([$pkgname], [$pkgtype])" ;;
+SAGE_SPKG_ENABLE([$pkgname], [$pkgtype])"
+                ;;
+            *)
+                echo >&2 "bootstrap: error: The content of $filename must be 'base', 'standard', 'optional', 'experimental', 'script', or 'pip'"
+                exit 1
+                ;;
         esac
     done
     echo "$spkg_configures" >> m4/sage_spkg_configures.m4
