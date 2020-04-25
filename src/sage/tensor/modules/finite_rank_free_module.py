@@ -1089,7 +1089,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         if p == 0:
             return self._ring
         if p not in self._dual_exterior_powers:
-            self._dual_exterior_powers[p] = ExtPowerDualFreeModule(self, p)
+                self._dual_exterior_powers[p] = ExtPowerDualFreeModule(self, p)
         return self._dual_exterior_powers[p]
 
     def general_linear_group(self):

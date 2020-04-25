@@ -319,8 +319,10 @@ that our form actually represents the Euler class appropriately.
 #******************************************************************************
 
 from sage.structure.unique_representation import UniqueRepresentation
+from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.symbolic.ring import SR
+from sage.rings.rational_field import QQ
 
 ################################################################################
 ## Separate functions
@@ -469,13 +471,17 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
         self._vbundle = vbundle
         self._base_space = vbundle._base_space
         self._rank = vbundle._rank
-        self._coeff_list = self._get_coeff_list()
         self._init_derived()
 
-    def _get_coeff_list(self):
+    def _get_coeff_list(self, distinct_real=True):
         r"""
         Return the list of coefficients of the Taylor expansion at zero of the
         function.
+
+        INPUT:
+
+        - ``distinct_real`` -- (default: ``False``) if ``False``, the taylor
+          coefficients are returned without transformation in the real case
 
         TESTS::
 
@@ -486,15 +492,19 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
             [1, 1]
 
         """
-        pow_range = self._base_space._dim // 2
+        if self._vbundle._field_type == 'real' and distinct_real == False:
+            pow_range = self._base_space._dim // 4
+        else:
+            pow_range = self._base_space._dim // 2
         def_var = self._func.default_variable()
         # Use a complex variable without affecting the old one:
         new_var = SR.symbol('x_char_class_', domain='complex')
-        if self._vbundle._field_type == 'real':
+        # In the real case, some transformations have to be done beforehand
+        if self._vbundle._field_type == 'real' and distinct_real == True:
             if self._class_type == 'additive':
                 func = self._func.subs({def_var: new_var ** 2}) / 2
             elif self._class_type == 'multiplicative':
-                # This could case problems in the real domain, where sqrt(x^2)
+                # This could cause problems in the real domain, where sqrt(x^2)
                 # is simplified to |x|. However, the variable must be complex
                 # anyway.
                 func = self._func.subs({def_var : new_var**2}).sqrt()
@@ -622,7 +632,61 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
         """
         return self._func
 
-    def get_form(self, connection, cmatrices=None):
+    @cached_method
+    def sequence(self, ring=SR):
+        r"""
+        Return the multiplicative/additive sequence (depending on the class type
+        of ``self``) of ``self.function`` in terms of elementary symmetric
+        functions `e_i`.
+
+        If `f(x)` is the function with respect to ``self`` then its
+        multiplicative sequence is given by
+
+        .. MATH::
+
+            \Pi_{i = 1}^n f(x_i) = \sum^n_{i=0} c_i \, e_i(x_1, \ldots, x_n)
+
+        whereas its additive sequence is given by
+
+        .. MATH::
+
+            \sum_{i = 1}^n f(x_i) = \sum^n_{i=0} c_i \, e_i(x_1, \ldots, x_n).
+
+        Here, `e_i` denotes the `i`-th elementary symmetric function.
+
+        ..SEE:
+
+            See :class:`~sage.combinat.sf.elementary.SymmetricFunctionAlgebra_elementary`
+            for detailed information about elementary symmetric functions.
+
+        """
+        if self._class_type == 'Pfaffian':
+            return ValueError('this functionality is not supported for'
+                              'characteristic classes of Pfaffian type')
+
+        from sage.combinat.sf.sf import SymmetricFunctions
+        from sage.misc.misc_c import prod
+
+        Sym = SymmetricFunctions(ring)
+
+        coeff = self._get_coeff_list(distinct_real=False)
+        if self._class_type == 'multiplicative':
+            from sage.combinat.partition import Partitions
+            # Get the multiplicative sequence in the monomial basis:
+            mon_pol = Sym.m().sum(prod(ring(coeff[i]) for i in p) * Sym.m()[p]
+                                  for k in range(len(coeff))
+                                  for p in Partitions(k))
+        elif self._class_type == 'additive':
+            # Express the additive sequence in the monomial basis:
+            summands = [ring(coeff[k]) * Sym.m()[k]
+                        for k in range(1, len(coeff))]
+            # The 0th order term must be treated separately:
+            summands.append(self._vbundle._rank*coeff[0]*Sym.m()[0])
+            mon_pol = Sym.m().sum(summands)
+        # Convert to elementary symmetric polynomials:
+        return Sym.e()(mon_pol)
+
+    def get_form(self, connection, cmatrices=None, algorithm='naive'):
         r"""
         Return the form representing ``self`` with respect to the given
         connection ``connection``.
@@ -637,12 +701,26 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
         - ``cmatrices`` -- (default: ``None``) a dictionary of curvature
           matrices with local frames as keys and curvature matrices as items; if
           ``None``, Sage tries to get the curvature matrices from the connection
+        - ``algorithm`` -- (default: ``straight``) states the algorithm that is
+          used to compute the characteristic form
+
+          - ``'straight'`` -- naive approach to Chern--Weil method
+          - ``'chern_roots'`` -- compute the Chern class (or Pontryagin class in
+             the real case) and insert it into the corresponding
+             additive/multiplicative sequence (not possible for classes of
+             Pfaffian type)
 
         OUTPUT:
 
         - mixed form as an instance of
           :class:`~sage.manifolds.differentiable.mixed_form.MixedForm`
           representing the total characteristic class
+
+        .. NOTE::
+
+            The algorithm ``'chern_roots'`` avoids the computation of powers of
+            the curvature matrices. This is most likely beneficial in higher
+            dimensions. This algorithm utilizes ``Singular`` libraries.
 
         .. NOTE::
 
@@ -717,15 +795,8 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
                     cmatrix = [[connection.curvature_form(i, j, frame)
                                     for j in self._vbundle.irange()]
                                         for i in self._vbundle.irange()]
-                    cmatrices[frame] = cmatrix
-            # Prepare mixed form:
-            name, latex_name = self._name, self._latex_name
-            if name is not None and connection._name is not None:
-                name += "(" + self._vbundle._name + ", " + connection._name + ")"
-            if latex_name is not None and connection._latex_name is not None:
-                latex_name += "(" + self._vbundle._latex_name + ", " + \
-                              connection._latex_name + ")"
-            res = self._base_space.mixed_form(name=name, latex_name=latex_name)
+                    cmatrices[frame] = cmat
+            res = self._base_space.mixed_form()
             # BEGIN computation:
             from sage.matrix.matrix_space import MatrixSpace
             for frame, cmatrix in cmatrices.items():
@@ -735,21 +806,38 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
                 mspace = MatrixSpace(alg, self._rank)
                 # Insert "normalized" curvature matrix into polynomial:
                 cmatrix = mspace(cmatrix)  # convert curvature matrix
-                ncmatrix = self._normalize_matrix(cmatrix)
-                rmatrix = self._insert_in_polynomial(ncmatrix)
-                # Compute classes:
-                if self._class_type == 'additive':
-                    rst = rmatrix.trace()  # mixed form
-                elif self._class_type == 'multiplicative':
-                    rst = rmatrix.det()  # mixed form
-                elif self._class_type == 'Pfaffian':
-                    rst = rmatrix.pfaffian()  # mixed form
+                # normalize matrix
+                from sage.symbolic.constants import pi
+                fac = 1 / (2 * pi)
+                if self._class_type != 'Pfaffian':
+                    from sage.libs.pynac.pynac import I
+                    fac = fac / I
+                ncmatrix = fac * cmatrix
+                # start algorithm
+                if algorithm == 'naive':
+                    rmatrix = self._insert_in_polynomial(ncmatrix)
+                    # Compute classes:
+                    if self._class_type == 'additive':
+                        rst = rmatrix.trace()  # mixed form
+                    elif self._class_type == 'multiplicative':
+                        rst = rmatrix.det()  # mixed form
+                    elif self._class_type == 'Pfaffian':
+                        rst = rmatrix.pfaffian()  # mixed form
+                # if algorithm 'chern_roots' is used, compute the Chern or
+                # Pontryagin class instead (in general faster)
+                elif algorithm == 'chern_roots':
+                    from sage.symbolic.constants import pi
+                    fac = 1 / (2 * pi)
+                    if self._vbundle._field_type == 'complex':
+                        from sage.libs.pynac.pynac import I
+                        fac = fac / I
+                    ncmatrix = fac * cmatrix
+                    rst = (1 + ncmatrix).det()
                 # Set restriction:
                 res.set_restriction(rst)
-            # END of computation
-            #
-            # Preparation to name each homogeneous component; only even (or in
-            # the real case, by four divisible) degrees are non-zero:
+
+            # only even (or in the real case, by four divisible) degrees are
+            # non-zero:
             if self._class_type == 'Pfaffian':
                 deg_dist = self._rank
             elif self._vbundle._field_type == 'real':
@@ -759,6 +847,29 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
             else:
                 # You never know...
                 deg_dist = 1
+
+            # in case that algorithm='chern_roots', insert result in sequence:
+            if algorithm == 'chern_roots':
+                from sage.rings.polynomial.polynomial_ring_constructor import \
+                    PolynomialRing
+                from sage.misc.misc_c import prod
+                R = PolynomialRing(SR, 'x_char_class_',
+                                   self._base_space._dim//deg_dist + 1)
+                ele_pol = R(sum(c * prod(R.gens()[i] for i in p)
+                                for p, c in self.sequence()))
+                ele_forms = [res.parent()(form) for form in res[::deg_dist]]
+                res = ele_pol(ele_forms)
+            # END of computation
+
+            # name result:
+            name, latex_name = self._name, self._latex_name
+            if name is not None and connection._name is not None:
+                name += "(" + self._vbundle._name + ", " + connection._name + ")"
+            if latex_name is not None and connection._latex_name is not None:
+                latex_name += "(" + self._vbundle._latex_name + ", " + \
+                              connection._latex_name + ")"
+            res.set_name(name=name, latex_name=latex_name)
+
             # Now, define the name for each form:
             for k in res.irange():
                 if k % deg_dist != 0 or (self._class_type == 'Pfaffian' and
@@ -803,42 +914,14 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
         mspace = cmatrix.parent()
         # Compute matrix powers:
         power_list = [mspace.one()]
-        for pow in range(len(self._coeff_list) - 1):
+        coeff = self._get_coeff_list()
+        for pow in range(len(coeff) - 1):
             power_list.append(cmatrix * power_list[pow])
         # Put things together:
-        rmatrix = sum(self._coeff_list[k] * power_list[k]
-                      for k in range(len(self._coeff_list)))
+        rmatrix = sum(coeff[k] * power_list[k]
+                      for k in range(len(coeff)))
 
         return rmatrix
-
-    def _normalize_matrix(self, cmatrix):
-        r"""
-        Return the curvature matrix "normalized" with `i/(2 \pi)` or `1/(2 \pi)`
-        respectively.
-
-        INPUT:
-
-        - ``cmatrix`` -- curvature matrix
-
-        OUTPUT:
-
-        - ``I/(2*pi)*cmatrix``
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: TM = M.tangent_bundle()
-            sage: c = TM.characteristic_class(1+x)
-            sage: c._normalize_matrix(x)
-            -1/2*I*x/pi
-
-        """
-        from sage.symbolic.constants import pi
-        fac = 1 / (2 * pi)
-        if self._class_type != 'Pfaffian':
-            from sage.libs.pynac.pynac import I
-            fac = fac / I
-        return fac * cmatrix
 
     def _get_min_frames(self, frame_list):
         r"""
