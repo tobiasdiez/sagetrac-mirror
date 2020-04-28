@@ -1625,11 +1625,6 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
             sage: a = M.alternating_form(1, 'a') ; a
             Linear form a on the Rank-3 free module M over the Integer Ring
 
-        An alternating form of degree 0 is an element of the base ring::
-
-            sage: s = M.alternating_form(0) ; s
-            1
-
         To construct such a form, it is preferable to call the method
         :meth:`linear_form` instead::
 
@@ -1642,8 +1637,12 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
 
         """
         if degree == 0:
-            # Return preferably a non-zero element of the ring:
-            return self._ring._an_element_()
+            try:
+                return self._ring.element_class(self._ring, name=name,
+                                                latex_name=latex_name)
+            except (KeyError, AttributeError):
+                raise NotImplementedError('{} apparently '.format(self._ring) +
+                                          'does not provide generic elements')
         return self.dual_exterior_power(degree).element_class(self, degree,
                                               name=name, latex_name=latex_name)
 
