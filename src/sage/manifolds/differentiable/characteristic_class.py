@@ -704,7 +704,7 @@ class CharacteristicClass(UniqueRepresentation, SageObject):
             summands = [ring(coeff[k]) * Sym.m()[k]
                         for k in range(1, len(coeff))]
             # The 0th order term must be treated separately:
-            summands.append(self._vbundle._rank*coeff[0]*Sym.m()[0])
+            summands.append(self._vbundle._rank * coeff[0] * Sym.m()[0])
             mon_pol = Sym.m().sum(summands)
         # Convert to elementary symmetric polynomials:
         return Sym.e()(mon_pol)
