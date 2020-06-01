@@ -254,7 +254,7 @@ class TopologicalSubmanifold(TopologicalManifold):
         return "{}-dimensional {} submanifold {} immersed in the {}".format(
                 self._dim, self._structure.name, self._name, self._ambient)
 
-    def set_immersion(self, phi, inverse=None, var=None,
+    def set_immersion(self, phi: ContinuousMap, inverse=None, var=None,
                       t_inverse=None):
         r"""
         Register the immersion of the immersed submanifold.
@@ -310,8 +310,6 @@ class TopologicalSubmanifold(TopologicalManifold):
             ....:                 t_inverse={t: phi_inv_t})
 
         """
-        if not isinstance(phi, ContinuousMap):
-            raise TypeError("the argument phi must be a continuous map")
         if phi.domain() is not self or phi.codomain() is not self._ambient:
             raise ValueError("{} is not a map from {} to {}".format(phi, self,
                                                                 self._ambient))
@@ -384,7 +382,7 @@ class TopologicalSubmanifold(TopologicalManifold):
                              "before calling declare_embedding()")
         self._embedded = True
 
-    def set_embedding(self, phi, inverse=None, var=None,
+    def set_embedding(self, phi: ContinuousMap, inverse=None, var=None,
                       t_inverse=None):
         r"""
         Register the embedding of an embedded submanifold.
@@ -683,7 +681,7 @@ class TopologicalSubmanifold(TopologicalManifold):
 
         return ParametricSurface((fx, fy, fz), (u, v), **kwargs)
 
-    def ambient(self):
+    def ambient(self) -> TopologicalManifold:
         r"""
         Return the manifold in which ``self`` is immersed or embedded.
 
@@ -696,7 +694,7 @@ class TopologicalSubmanifold(TopologicalManifold):
         """
         return self._ambient
 
-    def immersion(self):
+    def immersion(self) -> ContinuousMap:
         r"""
         Return the immersion of ``self`` into the ambient manifold.
 
@@ -718,11 +716,11 @@ class TopologicalSubmanifold(TopologicalManifold):
              3-dimensional topological manifold M
 
         """
-        if not self._immersed:
+        if not self._immersed or not self._immersion:
             raise ValueError("the submanifold is not immersed")
         return self._immersion
 
-    def embedding(self):
+    def embedding(self) -> ContinuousMap:
         r"""
         Return the embedding of ``self`` into the ambient manifold.
 
@@ -744,6 +742,6 @@ class TopologicalSubmanifold(TopologicalManifold):
              3-dimensional topological manifold M
 
         """
-        if not self._embedded:
+        if not self._embedded or not self._immersion:
             raise ValueError("the submanifold is not embedded")
         return self._immersion

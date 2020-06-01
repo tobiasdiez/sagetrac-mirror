@@ -441,12 +441,17 @@ REFERENCES:
 
 from sage.categories.manifolds import Manifolds
 from sage.categories.homset import Hom
+from sage.manifolds.continuous_map import ContinuousMap
+from sage.manifolds.differentiable.diff_map import DiffMap
 from sage.rings.all import CC
 from sage.rings.real_mpfr import RR
 from sage.rings.infinity import infinity, minus_infinity
 from sage.rings.integer import Integer
 from sage.manifolds.manifold import TopologicalManifold
 from sage.manifolds.differentiable.mixed_form_algebra import MixedFormAlgebra
+from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
+from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
+from sage.misc.cachefunc import cached_method
 
 ###############################################################################
 
@@ -1200,11 +1205,12 @@ class DifferentiableManifold(TopologicalManifold):
                                                               dest_map=dest_map)
         return self._tensor_bundles[dest_map][(k, l)]
 
-    def vector_field_module(self, dest_map=None, force_free=False):
+    def vector_field_module(self, dest_map: DiffMap=None, force_free=False) -> VectorFieldModule:
         r"""
         Return the set of vector fields defined on ``self``, possibly
         with values in another differentiable manifold, as a module over the
         algebra of scalar fields defined on the manifold.
+        That is, returns `\Gamma^\infty(\Phi^* TN)` where `\Phi:\ M \to N` is a smooth map.
 
         See :class:`~sage.manifolds.differentiable.vectorfield_module.VectorFieldModule`
         for a complete documentation.
@@ -1212,12 +1218,10 @@ class DifferentiableManifold(TopologicalManifold):
         INPUT:
 
         - ``dest_map`` -- (default: ``None``) destination map, i.e. a
-          differentiable map `\Phi:\ M \rightarrow N`, where `M` is the
+          differentiable map `\Phi:\ M \to N`, where `M` is the
           current manifold and `N` a differentiable manifold;
           if ``None``, it is assumed that `N = M` and that `\Phi` is the
-          identity map (case of vector fields *on* `M`), otherwise
-          ``dest_map`` must be a
-          :class:`~sage.manifolds.differentiable.diff_map.DiffMap`
+          identity map (case of vector fields *on* `M`)
         - ``force_free`` -- (default: ``False``) if set to ``True``, force
           the construction of a *free* module (this implies that `N` is
           parallelizable)
@@ -1350,7 +1354,7 @@ class DifferentiableManifold(TopologicalManifold):
                                        VectorFieldModule, VectorFieldFreeModule
         if dest_map is None:
             dest_map = self.identity_map()
-        codomain = dest_map._codomain
+        codomain = dest_map.codomain()
         if dest_map not in self._vector_field_modules:
             if codomain.is_manifestly_parallelizable() or force_free:
                 self._vector_field_modules[dest_map] = \
@@ -3703,7 +3707,7 @@ class DifferentiableManifold(TopologicalManifold):
                                                                AffineConnection
         return AffineConnection(self, name, latex_name)
 
-    def metric(self, name, signature=None, latex_name=None, dest_map=None):
+    def metric(self, name, signature=None, latex_name=None, dest_map=None) -> PseudoRiemannianMetric:
         r"""
         Define a pseudo-Riemannian metric on the manifold.
 
@@ -3936,3 +3940,43 @@ class DifferentiableManifold(TopologicalManifold):
         else:
             signat = 2 - dim
         return vmodule.metric(name, signature=signat, latex_name=latex_name)
+    
+    @cached_method
+    def identity_map(self) -> DiffMap:
+        r"""
+        Identity map of ``self``.
+
+        The identity map of a differentiable manifold `M` is the trivial
+        diffeomorphism:
+
+        .. MATH::
+
+            \begin{array}{cccc}
+            \mathrm{Id}_M: & M & \longrightarrow & M \\
+                & p & \longmapsto & p
+            \end{array}
+
+        OUTPUT:
+
+        - the identity map
+
+        EXAMPLES:
+
+        Identity map of a differentiable manifold::
+
+            sage: M = Manifold(2, 'M', structure='differentiable')
+            sage: id = M.identity_map(); id
+            Identity map Id_M of the 2-dimensional differentiable manifold M
+            sage: id.display()
+            Id_M: M --> M
+            sage: isinstance(id, DiffMap)
+            True
+
+        Identity map of a topological manifold is not smooth::
+        
+            sage: M = Manifold(2, 'M', structure='topological')
+            sage: isinstance(M.identity_map(), DiffMap)
+            False
+
+        """
+        return Hom(self, self).one()

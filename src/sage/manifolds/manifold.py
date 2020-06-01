@@ -341,6 +341,10 @@ from sage.manifolds.subset import ManifoldSubset
 from sage.manifolds.structure import(
                             TopologicalStructure, RealTopologicalStructure,
                             DifferentialStructure, RealDifferentialStructure)
+from typing import Union, TYPE_CHECKING, Optional
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.manifold import DifferentiableManifold
+    from sage.manifolds.continuous_map import ContinuousMap
 
 
 #############################################################################
@@ -2143,7 +2147,7 @@ class TopologicalManifold(ManifoldSubset):
                       is_isomorphism=True)
 
     @cached_method
-    def identity_map(self):
+    def identity_map(self) -> 'ContinuousMap':
         r"""
         Identity map of ``self``.
 
@@ -2399,8 +2403,8 @@ class TopologicalManifold(ManifoldSubset):
 
 _manifold_id = Integer(0)
 
-def Manifold(dim, name, latex_name=None, field='real', structure='smooth',
-             start_index=0, **extra_kwds):
+def Manifold(dim:int, name:Optional[str], latex_name:Optional[str]=None, field='real', structure='smooth',
+             start_index=0, **extra_kwds) ->  Union[TopologicalManifold, 'DifferentiableManifold']:
     r"""
     Construct a manifold of a given type over a topological field.
 

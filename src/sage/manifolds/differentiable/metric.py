@@ -39,10 +39,13 @@ REFERENCES:
 #  the License, or (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
+from typing import overload, TYPE_CHECKING
 
 from sage.rings.integer import Integer
 from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.diff_form import DiffForm
 
 
 class PseudoRiemannianMetric(TensorField):
@@ -788,8 +791,7 @@ class PseudoRiemannianMetric(TensorField):
             True
 
         """
-        from sage.manifolds.differentiable.levi_civita_connection import \
-                                                           LeviCivitaConnection
+        from sage.manifolds.differentiable.levi_civita_connection import LeviCivitaConnection
         if self._connection is None:
             if latex_name is None:
                 if name is None:
@@ -1616,6 +1618,12 @@ class PseudoRiemannianMetric(TensorField):
             self._sqrt_abs_dets[frame] = resu
         return self._sqrt_abs_dets[frame]
 
+    @overload
+    def volume_form(self) -> 'DiffForm':
+        pass
+    @overload
+    def volume_form(self, contra: int) -> TensorField:
+        pass
     def volume_form(self, contra=0):
         r"""
         Volume form (Levi-Civita tensor) `\epsilon` associated with the metric.
@@ -1907,8 +1915,7 @@ class PseudoRiemannianMetric(TensorField):
 
         """
         from sage.functions.other import factorial
-        from sage.tensor.modules.format_utilities import format_unop_txt, \
-                                                         format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, format_unop_latex
         p = pform.tensor_type()[1]
         eps = self.volume_form(p)
         if p == 0:

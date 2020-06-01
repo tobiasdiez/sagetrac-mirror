@@ -38,6 +38,8 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.manifolds.differentiable.diff_map import DiffMap
+from sage.manifolds.differentiable.manifold import DifferentiableManifold
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.categories.modules import Modules
@@ -59,7 +61,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         \Phi:\  U \longrightarrow M,
 
-    the *vector field module* `\mathfrak{X}(U,\Phi)` is the set of
+    the *vector field module* `\mathfrak{X}(U,\Phi) = \Gamma(\Phi^* TM)` is the set of
     all vector fields of the type
 
     .. MATH::
@@ -73,6 +75,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         \forall p \in U,\ v(p) \in T_{\Phi(p)}M,
 
     where `T_{\Phi(p)}M` is the tangent space to `M` at the point `\Phi(p)`.
+    Thus elements of `\mathfrak{X}(U,\Phi)` are vector fields along `\Phi`. 
 
     The set `\mathfrak{X}(U,\Phi)` is a module over `C^k(U)`, the ring
     (algebra) of differentiable scalar fields on `U` (see
@@ -103,9 +106,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
     - ``domain`` -- differentiable manifold `U` along which the
       vector fields are defined
-    - ``dest_map`` -- (default: ``None``) destination map
+    - ``dest_map`` -- (default: ``None``) smooth destination map
       `\Phi:\ U \rightarrow M`
-      (type: :class:`~sage.manifolds.differentiable.diff_map.DiffMap`);
       if ``None``, it is assumed that `U = M` and `\Phi` is the identity
       map of `M` (case of vector fields *on* `M`)
 
@@ -181,7 +183,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     """
     Element = VectorField
 
-    def __init__(self, domain, dest_map=None):
+    def __init__(self, domain: DifferentiableManifold, dest_map: DiffMap=None):
         r"""
         Construct the module of vector fields taking values on a (a priori)
         non-parallelizable differentiable manifold.
@@ -227,7 +229,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
             latex_name += "," + dm_latex_name
         self._name = name + ")"
         self._latex_name = latex_name + r"\right)"
-        self._ambient_domain = self._dest_map._codomain
+        self._ambient_domain = self._dest_map.codomain()
         # The member self._ring is created for efficiency (to avoid
         # calls to self.base_ring()):
         self._ring = domain.scalar_field_algebra()
@@ -1539,7 +1541,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                            " mapped into the {}".format(self._ambient_domain)
         return description
 
-    def domain(self):
+    def domain(self) -> DifferentiableManifold:
         r"""
         Return the domain of the vector fields in ``self``.
 
@@ -1548,10 +1550,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - a
-          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
-          representing the domain of the vector fields that belong to this
-          module
+        - a differentiable manifold representing the domain of the vector fields
+          that belong to this module
 
         EXAMPLES::
 
@@ -1570,7 +1570,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         """
         return self._domain
 
-    def ambient_domain(self):
+    def ambient_domain(self) -> DifferentiableManifold:
         r"""
         Return the manifold in which the vector fields of ``self``
         take their values.
@@ -1580,10 +1580,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - a
-          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
-          representing the manifold in which the vector fields of ``self``
-          take their values
+        - a differentiable manifold representing the manifold in which the 
+          vector fields of ``self`` take their values
 
         EXAMPLES::
 
@@ -1602,7 +1600,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         """
         return self._ambient_domain
 
-    def destination_map(self):
+    def destination_map(self) -> DiffMap:
         r"""
         Return the differential map associated to ``self``.
 
@@ -1630,8 +1628,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - a :class:`~sage.manifolds.differentiable.diff_map.DiffMap`
-          representing the differential map `\Phi`
+        - the differentiable map `\Phi`
 
         EXAMPLES::
 
