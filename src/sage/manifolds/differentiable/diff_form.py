@@ -44,11 +44,14 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+from typing import Optional, TYPE_CHECKING
 from sage.misc.cachefunc import cached_method
 from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
 from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
 
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
 
 class DiffForm(TensorField):
     r"""
@@ -372,14 +375,13 @@ class DiffForm(TensorField):
         self.exterior_derivative.clear_cache()
 
     @cached_method
-    def exterior_derivative(self):
+    def exterior_derivative(self) -> 'DiffForm':
         r"""
         Compute the exterior derivative of ``self``.
 
         OUTPUT:
 
-        - instance of :class:`DiffForm` representing the exterior derivative
-          of the differential form
+        - the exterior derivative of the differential form
 
         EXAMPLES:
 
@@ -573,7 +575,7 @@ class DiffForm(TensorField):
                                           other_r._restrictions[dom])
         return resu
 
-    def degree(self):
+    def degree(self) -> int:
         r"""
         Return the degree of ``self``.
 
@@ -1134,8 +1136,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         no symmetry;  no antisymmetry
 
     """
-    def __init__(self, vector_field_module, degree, name=None,
-                 latex_name=None):
+    def __init__(self, vector_field_module: 'VectorFieldModule', degree: int, name: Optional[str]=None,
+                 latex_name: Optional[str]=None):
         r"""
         Construct a differential form.
 
@@ -1288,14 +1290,13 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         return TensorFieldParal.__call__(self, *args)
 
     @cached_method
-    def exterior_derivative(self):
+    def exterior_derivative(self) -> 'DiffFormParal':
         r"""
         Compute the exterior derivative of ``self``.
 
         OUTPUT:
 
-        - a :class:`DiffFormParal` representing the exterior
-          derivative of the differential form
+        - the exterior derivative of the differential form
 
         EXAMPLES:
 

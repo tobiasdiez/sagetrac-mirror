@@ -193,6 +193,7 @@ tensor ``t`` acts on pairs formed by a linear form and a module element::
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 from __future__ import absolute_import
+from typing import Dict
 
 from sage.rings.integer import Integer
 from sage.structure.element import ModuleElement
@@ -202,6 +203,7 @@ from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 from sage.parallel.decorate import parallel
 from sage.parallel.parallelism import Parallelism
 from sage.manifolds.chart import Chart
+from sage.tensor.modules.free_module_basis import FreeModuleBasis
 
 # TODO: remove the import of Chart after _preparse_display has been redefined
 # in tensor fields
@@ -292,7 +294,7 @@ class FreeModuleTensor(ModuleElement):
             self._latex_name = self._name
         else:
             self._latex_name = latex_name
-        self._components = {}  # dict. of the sets of components on various
+        self._components:Dict[FreeModuleBasis, Components] = {}  # dict. of the sets of components on various
                               # bases, with the bases as keys (initially empty)
 
         # Treatment of symmetry declarations:

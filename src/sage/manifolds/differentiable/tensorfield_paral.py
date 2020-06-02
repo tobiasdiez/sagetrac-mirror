@@ -308,6 +308,9 @@ from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.parallel.decorate import parallel
 from sage.parallel.parallelism import Parallelism
 from sage.symbolic.ring import SR
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sage.tensor.modules.comp import Components
 
 class TensorFieldParal(FreeModuleTensor, TensorField):
     r"""
@@ -1084,7 +1087,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
         # The add_comp operation is performed on the subdomain:
         return rst.add_comp(basis=basis)
 
-    def comp(self, basis=None, from_basis=None):
+    def comp(self, basis=None, from_basis=None) -> 'Components':
         r"""
         Return the components in a given vector frame.
 
@@ -1102,8 +1105,7 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         OUTPUT:
 
-        - components in the vector frame ``basis``, as an instance of the
-          class :class:`~sage.tensor.modules.comp.Components`
+        - components in the vector frame ``basis``
 
         EXAMPLES::
 

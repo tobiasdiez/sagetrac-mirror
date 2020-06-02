@@ -52,6 +52,7 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 from __future__ import print_function
+from typing import Optional, Tuple, TYPE_CHECKING, Union
 
 from sage.rings.integer import Integer
 from sage.rings.integer_ring import ZZ
@@ -59,6 +60,14 @@ from sage.structure.element import ModuleElement
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
+    from sage.manifolds.differentiable.manifold import DifferentiableManifold
+    from sage.manifolds.differentiable.diff_map import DiffMap
+    from sage.tensor.modules.comp import Components
+    from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
+
+TensorType = Tuple[int, int]
 class TensorField(ModuleElement):
     r"""
     Tensor field along a differentiable manifold.
@@ -115,8 +124,7 @@ class TensorField(ModuleElement):
     INPUT:
 
     - ``vector_field_module`` -- module `\mathfrak{X}(U,\Phi)` of vector
-      fields along `U` associated with the map `\Phi: U \rightarrow M` (cf.
-      :class:`~sage.manifolds.differentiable.vectorfield_module.VectorFieldModule`)
+      fields along `U` associated with the map `\Phi: U \rightarrow M`
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
       and `l` the covariant rank
     - ``name`` -- (default: ``None``) name given to the tensor field
@@ -362,8 +370,8 @@ class TensorField(ModuleElement):
         True
 
     """
-    def __init__(self, vector_field_module, tensor_type, name=None,
-                 latex_name=None, sym=None, antisym=None, parent=None):
+    def __init__(self, vector_field_module: 'VectorFieldModule', tensor_type: TensorType, name: Optional[str] = None,
+                 latex_name: Optional[str] = None, sym=None, antisym=None, parent=None):
         r"""
         Construct a tensor field.
 
@@ -411,7 +419,7 @@ class TensorField(ModuleElement):
             parent = vector_field_module.tensor_module(*tensor_type)
         ModuleElement.__init__(self, parent)
         self._vmodule = vector_field_module
-        self._tensor_type = tuple(tensor_type)
+        self._tensor_type = tensor_type
         self._tensor_rank = self._tensor_type[0] + self._tensor_type[1]
         self._is_zero = False # a priori, may be changed below or via
                               # method __bool__()
@@ -799,14 +807,13 @@ class TensorField(ModuleElement):
         """
         return self._domain
 
-    def base_module(self):
+    def base_module(self) -> 'VectorFieldModule':
         r"""
         Return the vector field module on which ``self`` acts as a tensor.
 
         OUTPUT:
 
-        - instance of
-          :class:`~sage.manifolds.differentiable.vectorfield_module.VectorFieldModule`
+        - the underlying vector field module
 
         EXAMPLES:
 
@@ -826,7 +833,7 @@ class TensorField(ModuleElement):
         """
         return self._vmodule
 
-    def tensor_type(self):
+    def tensor_type(self) -> TensorType:
         r"""
         Return the tensor type of ``self``.
 
@@ -907,7 +914,7 @@ class TensorField(ModuleElement):
 
     #### End of simple accessors #####
 
-    def set_restriction(self, rst):
+    def set_restriction(self, rst: 'TensorField'):
         r"""
         Define a restriction of ``self`` to some subdomain.
 
@@ -943,8 +950,6 @@ class TensorField(ModuleElement):
             True
 
         """
-        if not isinstance(rst, TensorField):
-            raise TypeError("the argument must be a tensor field")
         if not rst._domain.is_subset(self._domain):
             raise ValueError("the domain of the declared restriction is not " +
                              "a subset of the field's domain")
@@ -972,7 +977,7 @@ class TensorField(ModuleElement):
                                             latex_name=self._latex_name)
         self._is_zero = False  # a priori
 
-    def restrict(self, subdomain, dest_map=None):
+    def restrict(self, subdomain: 'DifferentiableManifold', dest_map: Optional['DiffMap'] = None):
         r"""
         Return the restriction of ``self`` to some subdomain.
 
@@ -980,9 +985,7 @@ class TensorField(ModuleElement):
 
         INPUT:
 
-        - ``subdomain`` --
-          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`;
-          open subset `U` of the tensor field domain `S`
+        - ``subdomain`` -- open subset `U` of the tensor field domain `S`
         - ``dest_map`` --
           :class:`~sage.manifolds.differentiable.diff_map.DiffMap`
           (default: ``None``); destination map `\Psi:\ U \rightarrow V`,
@@ -1320,7 +1323,7 @@ class TensorField(ModuleElement):
         rst = self.restrict(basis._domain, dest_map=basis._dest_map)
         return rst._add_comp_unsafe(basis)
 
-    def add_comp(self, basis=None):
+    def add_comp(self, basis=None) -> 'Components':
         r"""
         Return the components of ``self`` in a given vector frame
         for assignment.
@@ -1337,8 +1340,7 @@ class TensorField(ModuleElement):
 
         OUTPUT:
 
-        - components in the given frame, as a
-          :class:`~sage.tensor.modules.comp.Components`; if such
+        - components in the given frame; if such
           components did not exist previously, they are created
 
         EXAMPLES::
@@ -1785,6 +1787,7 @@ class TensorField(ModuleElement):
             except AttributeError:
                 # case of a genuine vector frame
                 pass
+        
         rst = self.restrict(frame._domain, dest_map=frame._dest_map)
         return rst.display(frame, chart)
 
@@ -3101,7 +3104,7 @@ class TensorField(ModuleElement):
             resu._restrictions[rst._domain] = rst
         return resu
 
-    def contract(self, *args):
+    def contract(self, *args) -> 'TensorField':
         r"""
         Contraction of ``self`` with another tensor field on one or
         more indices.

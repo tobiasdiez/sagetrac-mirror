@@ -39,7 +39,6 @@ REFERENCES:
 #******************************************************************************
 
 from sage.manifolds.differentiable.diff_map import DiffMap
-from sage.manifolds.differentiable.manifold import DifferentiableManifold
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.categories.modules import Modules
@@ -48,6 +47,9 @@ from sage.rings.integer import Integer
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 from sage.manifolds.differentiable.vectorfield import (VectorField,
                                                        VectorFieldParal)
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.manifold import DifferentiableManifold
 
 class VectorFieldModule(UniqueRepresentation, Parent):
     r"""
@@ -183,7 +185,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     """
     Element = VectorField
 
-    def __init__(self, domain: DifferentiableManifold, dest_map: DiffMap=None):
+    def __init__(self, domain: 'DifferentiableManifold', dest_map: DiffMap=None):
         r"""
         Construct the module of vector fields taking values on a (a priori)
         non-parallelizable differentiable manifold.
@@ -382,7 +384,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         else:
            return self._latex_name
 
-    def domain(self):
+    def domain(self) -> 'DifferentiableManifold':
         r"""
         Return the domain of the vector fields in this module.
 
@@ -391,10 +393,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         OUTPUT:
 
-        - instance of
-          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
-          representing the domain of the vector fields that belong to this
-          module
+        - the domain of the vector fields that belong to this module
 
         EXAMPLES::
 
@@ -411,7 +410,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         """
         return self._domain
 
-    def ambient_domain(self):
+    def ambient_domain(self) -> 'DifferentiableManifold':
         r"""
         Return the manifold in which the vector fields of this module take
         their values.
@@ -421,9 +420,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         OUTPUT:
 
-        - instance of
-          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
-          representing the manifold in which the vector fields of this
+        - the manifold in which the vector fields of this
           module take their values
 
         EXAMPLES::
@@ -1541,7 +1538,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
                            " mapped into the {}".format(self._ambient_domain)
         return description
 
-    def domain(self) -> DifferentiableManifold:
+    def domain(self) -> 'DifferentiableManifold':
         r"""
         Return the domain of the vector fields in ``self``.
 
@@ -1570,7 +1567,7 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         """
         return self._domain
 
-    def ambient_domain(self) -> DifferentiableManifold:
+    def ambient_domain(self) -> 'DifferentiableManifold':
         r"""
         Return the manifold in which the vector fields of ``self``
         take their values.
