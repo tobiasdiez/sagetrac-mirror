@@ -341,10 +341,12 @@ from sage.manifolds.subset import ManifoldSubset
 from sage.manifolds.structure import(
                             TopologicalStructure, RealTopologicalStructure,
                             DifferentialStructure, RealDifferentialStructure)
-from typing import Union, TYPE_CHECKING, Optional
+from typing import Union, TYPE_CHECKING, Optional, overload
 if TYPE_CHECKING:
+    from sage.manifolds.manifold import TopologicalManifold
     from sage.manifolds.differentiable.manifold import DifferentiableManifold
     from sage.manifolds.continuous_map import ContinuousMap
+    from sage.manifolds.differentiable.diff_map import DiffMap
 
 
 #############################################################################
@@ -2146,8 +2148,12 @@ class TopologicalManifold(ManifoldSubset):
         return homset(coord_functions, name=name, latex_name=latex_name,
                       is_isomorphism=True)
 
+    @overload
+    def identity_map(self: 'DifferentiableManifold') -> 'DiffMap': ...
+    @overload
+    def identity_map(self: 'TopologicalManifold') -> 'ContinuousMap': ...
     @cached_method
-    def identity_map(self) -> 'ContinuousMap':
+    def identity_map(self):
         r"""
         Identity map of ``self``.
 
@@ -2190,6 +2196,20 @@ class TopologicalManifold(ManifoldSubset):
             Point p on the Complex 2-dimensional topological manifold M
             sage: id(p) == p
             True
+
+        Identity map of a differentiable manifold::
+
+            sage: M = Manifold(2, 'M', structure='differentiable')
+            sage: id = M.identity_map(); id
+            Identity map Id_M of the 2-dimensional differentiable manifold M
+            sage: isinstance(id, DiffMap)
+            True
+
+        Identity map of a topological manifold is not smooth::
+        
+            sage: M = Manifold(2, 'M', structure='topological')
+            sage: isinstance(M.identity_map(), DiffMap)
+            False
 
         .. SEEALSO::
 
