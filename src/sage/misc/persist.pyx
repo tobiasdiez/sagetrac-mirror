@@ -39,7 +39,6 @@ from textwrap import dedent
 import zlib; comp = zlib
 import bz2; comp_other = bz2
 
-from .misc import SAGE_DB
 from .sage_unittest import TestSuite
 
 
@@ -1123,6 +1122,7 @@ def db(name):
 
     The database directory is ``$HOME/.sage/db``.
     """
+    from .misc import SAGE_DB
     return load('%s/%s'%(SAGE_DB,name))
 
 
@@ -1135,4 +1135,5 @@ def db_save(x, name=None):
     try:
         x.db(name)
     except AttributeError:
+        from .misc import SAGE_DB
         save(x, '%s/%s'%(SAGE_DB,name))
