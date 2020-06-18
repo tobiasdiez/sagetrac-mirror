@@ -718,13 +718,13 @@ def generic_factory_unpickle(factory, *args):
     # strip this.
     return factory(*args[1], **args[2])
 
-def generic_factory_reduce(self, protocol):
+def generic_factory_reduce(self, proto):
     """
-    Used to provide a `__reduce__` method if one does not already exist.
+    Used to provide a ``__reduce__`` method if one does not already exist.
 
     INPUT:
 
-    - `protocol` -- positive integer; protocol number
+    - ``proto`` -- positive integer; protocol number
 
     EXAMPLES::
 
