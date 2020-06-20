@@ -1,1 +1,3 @@
-$(PYTHON) cysignals gmpy2 | $(PYTHON_TOOLCHAIN) cython pkgconfig
+FORCE $(PYTHON) cysignals gmpy2 | $(PYTHON_TOOLCHAIN) cython pkgconfig $(and $(filter-out no,$(SAGE_CHECK)), tox)
+
+# FORCE: Always run the spkg-install script
