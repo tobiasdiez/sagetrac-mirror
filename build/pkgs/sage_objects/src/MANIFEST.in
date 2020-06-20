@@ -3,11 +3,6 @@ graft sage/cpython
 include sage/__init__.py   # FIXME: Needs to become a namespace package
 include sage/env.py        # FIXME: sage_setup must be changed so it does not depend on it
 include sage/version.py    # FIXME: likewise
-include bin/sage
-include bin/sage-env
-include bin/sage-env-config
-include bin/sage-python
-include bin/sage-runtests
 
 graft sage/structure
 include sage/categories/__init__.py   # FIXME: Needs to become a namespace package
@@ -83,3 +78,15 @@ graft sage/libs/gmp
 
 ## What we do not want:
 # sage/misc/latex         -- this should really go to another package
+
+
+## For doctesting
+include bin/sage
+include bin/sage-env
+include bin/sage-env-config
+include bin/sage-python
+include bin/sage-runtests
+graft sage/doctest
+include sage/misc/temporary_file.*
+graft sage/repl
+graft sage/server
