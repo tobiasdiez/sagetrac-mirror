@@ -5,8 +5,31 @@ include sage/env.py        # FIXME: sage_setup must be changed so it does not de
 include sage/version.py    # FIXME: likewise
 
 graft sage/structure
-graft sage/categories
-include sage/misc/__init__.py
+include sage/categories/__init__.py   # FIXME: Needs to become a namespace package
+include sage/categories/action.*
+include sage/categories/algebra_functor.*
+include sage/categories/basic.*
+include sage/categories/cartesian_product.*
+include sage/categories/category*.*
+include sage/categories/covariant_functorial_construction.*
+include sage/categories/functor.*
+include sage/categories/homset.*
+include sage/categories/homsets.*
+include sage/categories/map.*
+include sage/categories/morphism.*
+include sage/categories/isomorphic_objects.*
+include sage/categories/objects.*
+include sage/categories/primer.*
+include sage/categories/pushout.*
+include sage/categories/quotients.*
+include sage/categories/realizations.*
+include sage/categories/sets_cat.*
+include sage/categories/sets_with_partial_maps.*
+include sage/categories/subobjects.*
+include sage/categories/subquotients.*
+include sage/categories/with_realizations.*
+
+include sage/misc/__init__.py         # FIXME: Needs to become a namespace package
 include sage/misc/classcall_metaclass.*
 include sage/misc/inherit_comparison*.*
 include sage/misc/weak_dict.*
