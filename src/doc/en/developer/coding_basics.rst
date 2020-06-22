@@ -963,9 +963,15 @@ framework. Here is a comprehensive list:
       sage: hash(c)  # random
       This doctest passes too, as the output is not checked
 
-  However, most functions generating pseudorandom output do not need this tag
-  since the doctesting framework guarantees the state of the pseudorandom
-  number generators (PRNGs) used in Sage for a given doctest.
+  If consistent output for a doctest is desired, one can set a fixed
+  random seed::
+
+      sage: set_random_seed(0)
+      sage: randint(0, 10)
+      1
+      sage: set_random_seed()
+      sage: randint(0, 10)  # random
+      5
 
   When possible, avoid the problem, e.g.: rather than checking the value of the
   hash in a doctest, one could illustrate successfully using it as a key in a
