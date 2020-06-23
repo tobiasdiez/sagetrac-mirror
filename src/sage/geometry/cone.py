@@ -6501,7 +6501,7 @@ def random_cone(lattice=None, min_ambient_dim=0, max_ambient_dim=None,
     TESTS:
 
     It's hard to test the output of a random process, but we can at
-    least make sure that we get a cone back.
+    least make sure that we get a cone back::
 
         sage: set_random_seed()
         sage: from sage.geometry.cone import is_Cone
