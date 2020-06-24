@@ -148,9 +148,9 @@ def choose_from_prob_list(lst):
         sage: for _ in range(10000):
         ....:     if choose_from_prob_list(v)[1]:
         ....:         true_count += 1
-        sage: true_count
+        sage: true_count  # random
         9033
-        sage: true_count - (10000 * 9/10)
+        sage: true_count - (10000 * 9/10)  # random
         33
     """
     r = random()
@@ -176,15 +176,24 @@ def random_integer_vector(n, length):
     EXAMPLES::
 
         sage: from sage.symbolic.random_tests import *
-        sage: random_integer_vector(100, 2)
+        sage: random_integer_vector(100, 2)  # random
         [11, 89]
-        sage: random_integer_vector(100, 2)
+        sage: random_integer_vector(100, 2)  # random
         [51, 49]
-        sage: random_integer_vector(100, 2)
+        sage: v = random_integer_vector(100, 2); v  # random
         [4, 96]
-        sage: random_integer_vector(10000, 20)
+        sage: len(v)
+        2
+        sage: sum(v)
+        100
+
+        sage: v = random_integer_vector(10000, 20); v  # random
         [332, 529, 185, 738, 82, 964, 596, 892, 732, 134,
          834, 765, 398, 608, 358, 300, 652, 249, 586, 66]
+        sage: len(v)
+        20
+        sage: sum(v)
+        10000
     """
     if length == 0:
         return []
@@ -206,6 +215,7 @@ def random_expr_helper(n_nodes, internal, leaves, verbose):
 
     EXAMPLES::
 
+        sage: set_random_seed(0)
         sage: from sage.symbolic.random_tests import *
         sage: random_expr_helper(9, [(0.5, operator.add, 2),
         ....:     (0.5, operator.neg, 1)], [(0.5, 1), (0.5, x)], True)
