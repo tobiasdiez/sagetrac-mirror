@@ -947,8 +947,8 @@ class KlyachkoBundle_class(SageObject):
            sage: V = P1.sheaves.line_bundle(H) + P1.sheaves.line_bundle(-H)
            sage: V.cohomology(dim=True, weight=(0,))
            (1, 0)
-           sage: Vtilde = V.random_deformation()
-           sage: Vtilde.cohomology(dim=True, weight=(0,))
+           sage: Vtilde = V.random_deformation()  # known bug
+           sage: Vtilde.cohomology(dim=True, weight=(0,))  # known bug
            (1, 0)
         """
         filt = self._filt.random_deformation(epsilon)
