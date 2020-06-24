@@ -330,8 +330,8 @@ We can easily solve linear equations using the backslash, like in Matlab.
 
 ::
 
-    sage: A=random_matrix(QQ,3) # random
-    sage: v=vector([2,3,1])
+    sage: A = random_matrix(QQ, 3, algorithm='unimodular')
+    sage: v = vector([2,3,1])
     sage: A,v # random
     (
     [ 0 -1  1]
