@@ -482,6 +482,7 @@ class PolynomialSequence_generic(Sequence_generic):
 
         EXAMPLES::
 
+            sage: set_random_seed(0)
             sage: sr = mq.SR(allow_zero_inversions=True)
             sage: F,s = sr.polynomial_system()
             sage: P = F.ring()
@@ -1523,6 +1524,7 @@ class PolynomialSequence_gf2(PolynomialSequence_generic):
 
         EXAMPLES::
 
+            sage: set_random_seed(0)
             sage: sr = mq.SR(1, 1, 1, 4, gf2=True, polybori=True)
             sage: F,s = sr.polynomial_system()
             sage: F.reduced()

@@ -3543,6 +3543,7 @@ class AlgebraicNumber_base(sage.structure.element.FieldElement):
 
         And a nice big example::
 
+            sage: set_random_seed(0)
             sage: K.<x> = QQ[]
             sage: p = K.random_element(3); p
             -12*x^3 + 1/2*x^2 - 1/95*x - 1/2

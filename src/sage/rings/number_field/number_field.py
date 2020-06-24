@@ -1760,7 +1760,7 @@ class NumberField_generic(WithEqualityById, number_field_base.NumberField):
 
             sage: K.<a> = NumberField(x^3 + 17)
             sage: b = K.polynomial_quotient_ring().random_element()
-            sage: K(b)
+            sage: K(b)  # random
             1/2*a^2 - 1/95*a - 1/2
 
         We can convert symbolic expressions::
@@ -2046,16 +2046,24 @@ class NumberField_generic(WithEqualityById, number_field_base.NumberField):
         EXAMPLES::
 
             sage: K.<j> = NumberField(x^8+1)
-            sage: K.random_element()
+            sage: w = K.random_element(); w  # random
             1/2*j^7 - j^6 - 12*j^5 + 1/2*j^4 - 1/95*j^3 - 1/2*j^2 - 4
+            sage: w in K
+            True
 
             sage: K.<a,b,c> = NumberField([x^2-2,x^2-3,x^2-5])
-            sage: K.random_element()
+            sage: w = K.random_element(); w  # random
             ((6136*c - 7489/3)*b + 5825/3*c - 71422/3)*a + (-4849/3*c + 58918/3)*b - 45718/3*c + 75409/12
+            sage: w in K
+            True
 
             sage: K.<a> = NumberField(x^5-2)
-            sage: K.random_element(integral_coefficients=True)
+            sage: w = K.random_element(integral_coefficients=True); w  # random
             a^3 + a^2 - 3*a - 1
+            sage: w in K
+            True
+            sage: all(y in ZZ for y in w)
+            True
 
         TESTS::
 
@@ -6149,7 +6157,7 @@ class NumberField_generic(WithEqualityById, number_field_base.NumberField):
         """
         if algorithm is None:
             algorithm = 'pari'
-        
+
         if algorithm == 'gp':
             from sage.lfunctions.all import Dokchitser
             r1, r2 = self.signature()
