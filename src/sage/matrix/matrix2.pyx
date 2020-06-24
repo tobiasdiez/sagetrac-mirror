@@ -3093,10 +3093,10 @@ cdef class Matrix(Matrix1):
 
             sage: M = random_matrix(ZZ, 10, 20)
             sage: N = random_matrix(ZZ, 20, 10)
-            sage: M.trace_of_product(N)
+            sage: t = M.trace_of_product(N); t  # random
             -1629
-            sage: (M*N).trace()
-            -1629
+            sage: (M*N).trace() == t
+            True
         """
         if self._nrows != other._ncols or other._nrows != self._ncols:
             raise ArithmeticError("incompatible dimensions")
@@ -6803,7 +6803,7 @@ cdef class Matrix(Matrix1):
             [ 0  1  2]
             [ 0  0  0]
 
-            sage: B=random_matrix(QQ,3,num_bound=10); B
+            sage: B=random_matrix(QQ,3,num_bound=10); B  # random
             [ -4  -3   6]
             [  5  -5 9/2]
             [3/2  -4  -7]
@@ -8674,7 +8674,7 @@ cdef class Matrix(Matrix1):
         We then randomize roughly half the entries::
 
             sage: a.randomize(0.5)
-            sage: a
+            sage: a  # random
             [                     0                      0                      0]
             [                     0                      0       1/2*x^2 - x - 12]
             [1/2*x^2 - 1/95*x - 1/2                      0                      0]
@@ -8682,7 +8682,7 @@ cdef class Matrix(Matrix1):
         Now we randomize all the entries of the resulting matrix::
 
             sage: a.randomize()
-            sage: a
+            sage: a  # random
             [                     0 -5/2*x^2 + 2/3*x - 1/4           -x^2 + 2/3*x]
             [                     1        x^2 + 1/3*x - 1                     -1]
             [                    -1       -x^2 - 1/4*x + 1                  -1/14]
@@ -8700,7 +8700,7 @@ cdef class Matrix(Matrix1):
         ::
 
             sage: a.randomize(x=-2^64, y=2^64)
-            sage: a
+            sage: a  # random
             [-3789934696463997112 -3775200185786627805]
             [-8014573080042851913  7914454492632997238]
         """
@@ -9194,7 +9194,7 @@ cdef class Matrix(Matrix1):
         ::
 
             sage: A = random_matrix(GF(127),200,200,density=0.3)
-            sage: A.density()
+            sage: A.density()  # random
             5211/20000
 
         ::
