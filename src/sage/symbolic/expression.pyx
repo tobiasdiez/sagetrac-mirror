@@ -9788,8 +9788,8 @@ cdef class Expression(CommutativeRingElement):
             sage: z = CC.random_element()
             sage: a = z.real_part()
             sage: b = z.imag_part()
-            sage: bool(SR(z).rectform() == a + b*I)
-            True
+            sage: abs(a + b*I - SR(z).rectform())  # abs tol 1e-16
+            0
 
         """
         return self.maxima_methods().rectform()
@@ -9986,6 +9986,7 @@ cdef class Expression(CommutativeRingElement):
 
         EXAMPLES::
 
+            sage: set_random_seed(0)
             sage: hypergeometric((5, 4), (4, 1, 2, 3),
             ....:                x).simplify_hypergeometric()
             1/144*x^2*hypergeometric((), (3, 4), x) +...
