@@ -369,7 +369,7 @@ class TypeSpace(SageObject):
 
             sage: f = Newforms(256,names='a')[0]
             sage: T = TypeSpace(f,2)
-            sage: g = T.minimal_twist(); g
+            sage: g = T.minimal_twist(); g  # random  # not unique
             q - a*q^3 + O(q^6)
             sage: g.level()
             64
