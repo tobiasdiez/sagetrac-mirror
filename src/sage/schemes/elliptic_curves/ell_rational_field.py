@@ -3345,10 +3345,13 @@ class EllipticCurve_rational_field(EllipticCurve_number_field):
         Observe that this is a group homomorphism (modulo rounding error)::
 
             sage: z = CC.random_element()
-            sage: 2 * E.elliptic_exponential(z)
+            sage: w = 2 * E.elliptic_exponential(z); w  # random
             (-1.52184235874404 - 0.0581413944316544*I : 0.948655866506124 - 0.0381469928565030*I : 1.00000000000000)
-            sage: E.elliptic_exponential(2 * z)
+            sage: r = E.elliptic_exponential(2 * z); r  # random
             (-1.52184235874404 - 0.0581413944316562*I : 0.948655866506128 - 0.0381469928565034*I : 1.00000000000000)
+            sage: error = abs(w[0] - r[0]) + abs(w[1] - r[1])
+            sage: min(error, error / (abs(w[0]) + abs(r[0]) + abs(w[1]) + abs(r[1])))  # abs tol 1e-13
+            0
         """
         return self.period_lattice().elliptic_exponential(z)
 
