@@ -255,7 +255,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             [ 1 -2  0]
             [ 2  2  1]
 
-            sage: IntegerLattice(random_matrix(ZZ, 5, 5, x=-2^20, y=2^20))
+            sage: IntegerLattice(random_matrix(ZZ, 5, 5, x=-2^20, y=2^20))  # random
             Free module of degree 5 and rank 5 over Integer Ring
             User basis matrix:
             [  -7945 -381123   85872 -225065   12924]
@@ -267,7 +267,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             sage: K.<a> = NumberField(x^8+1)
             sage: O = K.ring_of_integers()
             sage: f = O(a^7 - a^6 + 4*a^5 - a^4 + a^3 + 1)
-            sage: IntegerLattice(f)
+            sage: IntegerLattice(f)  # random
             Free module of degree 8 and rank 8 over Integer Ring
             User basis matrix:
             [ 0  1  0  1  0  3  3  0]
@@ -309,7 +309,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
 
             sage: from sage.modules.free_module_integer import IntegerLattice
             sage: L = IntegerLattice(random_matrix(ZZ, 10, 10), lll_reduce=False)
-            sage: L.reduced_basis
+            sage: L.reduced_basis  # random
             [   -8     2     0     0     1    -1     2     1   -95    -1]
             [   -2   -12     0     0     1    -1     1    -1    -2    -1]
             [    4    -4    -6     5     0     0    -2     0     1    -4]
@@ -322,7 +322,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             [   -1     2    -7     1     0     2     3 -1955   -22    -1]
 
             sage: _ = L.LLL()
-            sage: L.reduced_basis
+            sage: L.reduced_basis  # random
             [   1    0    0   -3    2   -2    0   -2    1    0]
             [  -1    1    0    0    1   -1    4   -1    1   -1]
             [  -2    0    0    1    0   -2   -1   -3    0   -2]
@@ -377,7 +377,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
 
             sage: from sage.modules.free_module_integer import IntegerLattice
             sage: A = random_matrix(ZZ, 10, 10, x=-2000, y=2000)
-            sage: L = IntegerLattice(A, lll_reduce=False); L
+            sage: L = IntegerLattice(A, lll_reduce=False); L  # random
             Free module of degree 10 and rank 10 over Integer Ring
             User basis matrix:
             [ -645 -1037 -1775 -1619  1721 -1434  1766  1701  1669  1534]
@@ -390,10 +390,10 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             [ -590 -1380  1768   774   656   760  -746  -849  1977 -1576]
             [  312  -242 -1732  1594  -439 -1069   458 -1195  1715    35]
             [  391  1229 -1815   607  -413  -860  1408  1656  1651  -628]
-            sage: min(v.norm().n() for v in L.reduced_basis)
+            sage: min(v.norm().n() for v in L.reduced_basis)  # random
             3346.57...
 
-            sage: L.LLL()
+            sage: L.LLL()  # random
             [ -888    53  -274   243   -19   431   710   -83   928   347]
             [  448  -330   370  -511   242  -584    -8  1220   502   183]
             [ -524  -460   402  1338  -247  -279 -1038   -28  -159  -794]
@@ -404,7 +404,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             [ -339   799   295   800   425  -605  -730 -1160   808   666]
             [  755 -1206  -918  -192 -1063   -37  -525   -75   338   400]
             [  382  -199 -1839  -482   984   -15  -695   136   682   563]
-            sage: L.reduced_basis[0].norm().n()
+            sage: L.reduced_basis[0].norm().n()  # random
             1613.74...
 
         """
