@@ -284,7 +284,7 @@ for the line, but over the same interval.
 ::
 
     sage: Q=plot(1,(x,-1,1),color="red", linestyle="--")
-    sage: Q
+    sage: Q  # known bug
     Graphics object consisting of 1 graphics primitive
 
 Because we put :math:`Q` in a line by itself at the end, it shows.  We
@@ -295,7 +295,7 @@ Now to show the plots superimposed on each other, we simply add them.
 
 ::
 
-    sage: P+Q
+    sage: P+Q  # known bug
     Graphics object consisting of 2 graphics primitives
 
 Suppose we wanted to view a detail of this.
