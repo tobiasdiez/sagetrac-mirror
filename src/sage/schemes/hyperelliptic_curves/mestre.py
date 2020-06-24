@@ -77,7 +77,7 @@ def HyperellipticCurve_from_invariants(i, reduced=True, precision=None,
 
     An example over a finite field::
 
-        sage: HyperellipticCurve_from_invariants([GF(13)(1),3,7,5])
+        sage: HyperellipticCurve_from_invariants([GF(13)(1),3,7,5])  # random
         Hyperelliptic Curve over Finite Field of size 13 defined by y^2 = 8*x^5 + 5*x^4 + 5*x^2 + 9*x + 3
 
     An example over a number field::
