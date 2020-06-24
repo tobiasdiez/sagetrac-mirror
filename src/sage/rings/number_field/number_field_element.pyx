@@ -897,11 +897,15 @@ cdef class NumberFieldElement(FieldElement):
         EXAMPLES::
 
             sage: K.<a> = NumberField(x^3-2)
-            sage: a._random_element()
+            sage: k = a._random_element(); k  # random
             -1/2*a^2 - 4
+            sage: k in K
+            True
             sage: K.<a> = NumberField(x^2-5)
-            sage: a._random_element()
+            sage: k = a._random_element(); k  # random
             -2*a - 1
+            sage: k in K
+            True
         """
         cdef NumberFieldElement elt = self._new()
         elt._randomize(num_bound, den_bound, distribution)
