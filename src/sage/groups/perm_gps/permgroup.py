@@ -319,6 +319,7 @@ def PermutationGroup(gens=None, gap_group=None, domain=None, canonicalize=True, 
     There is an underlying gap object that implements each
     permutation group::
 
+        sage: set_random_seed(0)
         sage: G = PermutationGroup([[(1,2,3,4)]])
         sage: G._gap_()
         Group( [ (1,2,3,4) ] )

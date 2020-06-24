@@ -218,8 +218,10 @@ class DualAbelianGroup_class(UniqueRepresentation, AbelianGroupBase):
 
             sage: G = AbelianGroup([2,3,9])
             sage: Gd = G.dual_group(base_ring=CC)
-            sage: Gd.random_element()
+            sage: g = Gd.random_element(); g  # random
             X1^2
+            sage: g in Gd
+            True
 
             sage: N = 43^2-1
             sage: G = AbelianGroup([N],names="a")
@@ -227,7 +229,7 @@ class DualAbelianGroup_class(UniqueRepresentation, AbelianGroupBase):
             sage: a, = G.gens()
             sage: A, = Gd.gens()
             sage: x = a^(N/4); y = a^(N/3); z = a^(N/14)
-            sage: X = A*Gd.random_element(); X
+            sage: X = A*Gd.random_element(); X  # random
             A^615
             sage: len([a for a in [x,y,z] if abs(X(a)-1)>10^(-8)])
             2

@@ -1172,8 +1172,10 @@ class AbelianGroup_class(UniqueRepresentation, AbelianGroupBase):
         EXAMPLES::
 
             sage: G = AbelianGroup([2,3,9])
-            sage: G.random_element()
+            sage: g = G.random_element(); g  # random
             f1^2
+            sage: g in G
+            True
         """
         from sage.misc.prandom import randint
         result = self.one()

@@ -10,7 +10,7 @@ When `n \in \Z`, you can construct these groups as follows::
 
 You can create random elements::
 
-    sage: [G.random_element() for _ in range(4)]
+    sage: [G.random_element() for _ in range(4)]  # random
     [15/16, 0, 1/2, 139/190]
 
 There is an iterator over the (infinitely many) elements::
@@ -192,12 +192,14 @@ class QmodnZ(Parent, UniqueRepresentation):
         EXAMPLES::
 
             sage: G = QQ/(6*ZZ)
-            sage: G.random_element()
+            sage: G.random_element()  # random
             47/16
-            sage: G.random_element()
+            sage: G.random_element()  # random
             1
-            sage: G.random_element()
+            sage: g = G.random_element(); g  # random
             3/5
+            sage: g in G
+            True
         """
         if self.n == 0:
             return self(QQ.random_element())
