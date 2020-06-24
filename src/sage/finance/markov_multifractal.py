@@ -223,9 +223,11 @@ class MarkovSwitchingMultifractal:
         EXAMPLES::
 
             sage: msm = finance.MarkovSwitchingMultifractal(8,1.4,1.0,0.95,3)
-            sage: msm.simulation(5)
+            sage: m = msm.simulation(5)  # random
             [0.0059, -0.0097, -0.0101, -0.0110, -0.0067]
-            sage: msm.simulation(3)
+            sage: len(m)
+            5
+            sage: msm.simulation(3)  # random
             [0.0055, -0.0084, 0.0141]
         """
         return self.simulations(n, 1)[0]
