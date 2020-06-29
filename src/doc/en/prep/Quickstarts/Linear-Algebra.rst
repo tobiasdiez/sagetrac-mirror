@@ -332,16 +332,16 @@ We can easily solve linear equations using the backslash, like in Matlab.
 
     sage: A = random_matrix(QQ, 3, algorithm='unimodular')
     sage: v = vector([2,3,1])
-    sage: A,v # random
+    sage: A,v  # random
     (
-    [ 0 -1  1]
-    [-1 -1 -1]
-    [ 0  2  2], (2, 3, 1)
+    [  7 -11   6]
+    [  2  -3   2]
+    [ -3   4  -3], (2, 3, 1)
     )
-    sage: x=A\v; x # random
-    (-7/2, -3/4, 5/4)
-    sage: A*x # random
-    (2, 3, 1)
+    sage: x=A\v; x  # random
+    (-29, -11, 14)
+    sage: A*x == v
+    True
 
 For *lots* more (concise) information, see the Sage `Linear Algebra
 Quick Reference
