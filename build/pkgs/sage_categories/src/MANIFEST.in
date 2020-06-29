@@ -53,6 +53,11 @@ include sage/rings/integer_fake.*
 include sage/libs/__init__.py
 graft sage/libs/gmp
 
+# Extra in sage_categories:
+include sage/rings/infinity.*
+include sage/rings/ideal.*
+# include sage/rings/integer*.*     # depends on cypari, flint
+# include sage/rings/rational*.*
 
 
 ## What we do not want:
