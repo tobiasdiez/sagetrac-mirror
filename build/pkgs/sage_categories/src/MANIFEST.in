@@ -54,10 +54,11 @@ include sage/libs/__init__.py
 graft sage/libs/gmp
 
 # Extra in sage_categories:
-include sage/rings/infinity.*
 include sage/rings/ideal.*
+include sage/rings/ring.*
 # include sage/rings/integer*.*     # depends on cypari, flint
 # include sage/rings/rational*.*
+# include sage/rings/infinity.*
 
 
 ## What we do not want:
