@@ -1338,25 +1338,30 @@ def random_prime(n, proof=None, lbound=2):
 
     EXAMPLES::
 
-        sage: p = random_prime(100000); p  # random
-        30029
+        sage: p = random_prime(100000)
         sage: p in range(100000)
+        True
+        sage: p.is_prime()
         True
         sage: random_prime(2)
         2
 
     Here we generate a random prime between 100 and 200::
 
-        sage: p = random_prime(200, lbound=100); p  # random
-        167
+        sage: p = random_prime(200, lbound=100)
         sage: p in range(100, 200)
+        True
+        sage: p.is_prime()
         True
 
     If all we care about is finding a pseudo prime, then we can pass
     in ``proof=False`` ::
 
-        sage: p = random_prime(200, proof=False, lbound=100); p  # random
-        197
+        sage: p = random_prime(200, proof=False, lbound=100)
+        sage: p in range(200)
+        True
+        sage: p.is_pseudoprime()
+        True
 
 
     TESTS::
@@ -5619,17 +5624,17 @@ def sort_complex_numbers_for_display(nums):
 
     EXAMPLES::
 
-        sage: set_random_seed(0)
-        sage: import sage.arith.misc
-        sage: sort_c = sort_complex_numbers_for_display
-        sage: nums = [CDF(i) for i in range(3)]
-        sage: for i in range(3):
-        ....:     nums.append(CDF(i + RDF.random_element(-3e-11, 3e-11),
-        ....:                     RDF.random_element()))
-        ....:     nums.append(CDF(i + RDF.random_element(-3e-11, 3e-11),
-        ....:                     RDF.random_element()))
-        sage: shuffle(nums)
-        sage: sort_c(nums)
+        sage: nums = [-2.862406201002009e-11 - 0.7088740263015161*I,
+        ....:         1.9999999999869107 + 0.6090836283134269*I,
+        ....:         2.2108362706985576e-11 - 0.43681052967509904*I,
+        ....:         0.0,
+        ....:         0.99999999997602882 - 0.7238965893336062*I,
+        ....:         2.0,
+        ....:         1.0,
+        ....:         1.0000000000138833 - 0.7587654737635712*I,
+        ....:         1.9999999999874383 - 0.4560801012073723*I]
+        sage: nums = [CDF(z) for z in nums]
+        sage: sort_complex_numbers_for_display(nums)
         [0.0, 1.0, 2.0, -2.862406201002009e-11 - 0.7088740263015161*I, 2.2108362706985576e-11 - 0.43681052967509904*I, 1.0000000000138833 - 0.7587654737635712*I, 0.9999999999760288 - 0.7238965893336062*I, 1.9999999999874383 - 0.4560801012073723*I, 1.9999999999869107 + 0.6090836283134269*I]
     """
     if not nums:
