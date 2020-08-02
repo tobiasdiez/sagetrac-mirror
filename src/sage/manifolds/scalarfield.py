@@ -3483,8 +3483,10 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
             sage: X.<x,y> = M.chart()
             sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1})
             sage: f = M.scalar_field(x^2, name='f')
-            sage: fU = f.restrict(U)
             sage: f.set_immutable()
+            sage: f.is_immutable()
+            True
+            sage: fU = f.restrict(U)
             sage: fU.is_immutable()
             True
 
@@ -3502,16 +3504,18 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
+            sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1})
             sage: f = M.scalar_field(x^2, name='f')
+            sage: fU = f.restrict(U)
             sage: f.set_immutable()
-            sage: g = M.scalar_field(x^2, name='g')
-            sage: g.set_immutable()
-
-        Check whether equality implies equality of hash::
-
-            sage: f == g
+            sage: fU.is_immutable()
             True
-            sage: hash(f) == hash(g)
+
+        Check whether equality on common domain implies equality of hash::
+
+            sage: f == fU
+            True
+            sage: hash(f) == hash(fU)
             True
 
         Let us check that ``f`` can be used as a dictionary key::
