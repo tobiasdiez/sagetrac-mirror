@@ -54,7 +54,6 @@ REFERENCES:
 from __future__ import print_function
 
 from sage.rings.integer import Integer
-from sage.rings.integer_ring import ZZ
 from sage.structure.element import ModuleElement
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
@@ -2149,17 +2148,20 @@ class TensorField(ModuleElement):
                 resu.append(dom)
         return resu
 
-    def __eq__(self, other):
+    def _richcmp_(self, other, op):
         r"""
-        Comparison (equality) operator.
+        Rich comparison operator.
 
         INPUT:
 
-        - ``other`` -- a tensor field or 0
+        - ``other`` -- a tensor field
+        - ``op`` -- comparison operator for which ``self`` and ``other`` shall
+          be compared with.
 
         OUTPUT:
 
-        - ``True`` if ``self`` is equal to ``other`` and ``False`` otherwise
+        - ``True`` if ``richcmp(self, other, op)`` holds and ``False``
+          otherwise
 
         TESTS::
 
@@ -2192,19 +2194,14 @@ class TensorField(ModuleElement):
             sage: t.parent().zero() == 0
             True
         """
-        if other is self:
-            return True
-        if other in ZZ: # to compare with 0
-            if other == 0:
+        from sage.structure.richcmp import op_NE, op_EQ
+        if op == op_NE:
+            return not self == other
+        elif op == op_EQ:
+            if self is other:
+                return True
+            elif other.is_zero():
                 return self.is_zero()
-            return False
-        elif not isinstance(other, TensorField):
-            return False
-        else: # other is another tensor field
-            if other._vmodule != self._vmodule:
-                return False
-            if other._tensor_type != self._tensor_type:
-                return False
             # Non-trivial open covers of the domain:
             open_covers = self._domain.open_covers()[1:]  # the open cover 0
                                                           # is trivial
@@ -2235,43 +2232,8 @@ class TensorField(ModuleElement):
                     return False  # the restrictions are not on the same
                                   # subdomains
             return resu
-
-    def __ne__(self, other):
-        r"""
-        Inequality operator.
-
-        INPUT:
-
-        - ``other`` -- a tensor field or 0
-
-        OUTPUT:
-
-        - ``True`` if ``self`` is different from ``other`` and ``False``
-          otherwise
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V')
-            sage: M.declare_union(U,V)   # M is the union of U and V
-            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-            sage: xy_to_uv = c_xy.transition_map(c_uv, (x+y, x-y),
-            ....:                    intersection_name='W', restrictions1= x>0,
-            ....:                    restrictions2= u+v>0)
-            sage: uv_to_xy = xy_to_uv.inverse()
-            sage: e_xy = c_xy.frame(); e_uv = c_uv.frame()
-            sage: t = M.tensor_field(1, 1, name='t')
-            sage: t[e_xy,:] = [[x+y, 0], [2, 1-y]]
-            sage: t.add_comp_by_continuation(e_uv, U.intersection(V), c_uv)
-            sage: t != t
-            False
-            sage: t != t.copy()
-            False
-            sage: t != 0
-            True
-
-        """
-        return not (self == other)
+        # Fall back on default implementation:
+        return super()._richcmp_(self, other, op)
 
     def __pos__(self):
         r"""

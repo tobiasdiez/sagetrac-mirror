@@ -24,7 +24,6 @@ from sage.structure.element import ModuleElement
 from sage.tensor.modules.free_module_element import FiniteRankFreeModuleElement
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 from sage.rings.integer import Integer
-from sage.rings.integer_ring import ZZ
 
 class Section(ModuleElement):
     r"""
@@ -1520,17 +1519,20 @@ class Section(ModuleElement):
                 resu.append(dom)
         return resu
 
-    def __eq__(self, other):
+    def _richcmp_(self, other, op):
         r"""
-        Comparison (equality) operator.
+        Rich comparison operator.
 
         INPUT:
 
-        - ``other`` -- a section or 0
+        - ``other`` -- a section
+        - ``op`` -- comparison operator for which ``self`` and ``other`` shall
+          be compared with.
 
         OUTPUT:
 
-        - ``True`` if ``self`` is equal to ``other`` and ``False`` otherwise
+        - ``True`` if ``richcmp(self, other, op)`` holds and ``False``
+          otherwise
 
         TESTS::
 
@@ -1569,17 +1571,14 @@ class Section(ModuleElement):
             True
 
         """
-        if other is self:
-            return True
-        if other in ZZ: # to compare with 0
-            if other == 0:
+        from sage.structure.richcmp import op_NE, op_EQ
+        if op == op_NE:
+            return not self == other
+        elif op == op_EQ:
+            if self is other:
+                return True
+            elif other.is_zero():
                 return self.is_zero()
-            return False
-        elif not isinstance(other, Section):
-            return False
-        else: # other is another section
-            if other._smodule != self._smodule:
-                return False
             # Non-trivial open covers of the domain:
             open_covers = self._domain.open_covers()[1:]  # the open cover 0
                                                           # is trivial
@@ -1610,48 +1609,8 @@ class Section(ModuleElement):
                     return False  # the restrictions are not on the same
                                   # subdomains
             return resu
-
-    def __ne__(self, other):
-        r"""
-        Inequality operator.
-
-        INPUT:
-
-        - ``other`` -- section or 0
-
-        OUTPUT:
-
-        - ``True`` if ``self`` is different from ``other`` and ``False``
-          otherwise
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M', structure='top')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V')
-            sage: M.declare_union(U,V)   # M is the union of U and V
-            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-            sage: xy_to_uv = c_xy.transition_map(c_uv, (x+y, x-y),
-            ....:                    intersection_name='W', restrictions1= x>0,
-            ....:                    restrictions2= u+v>0)
-            sage: uv_to_xy = xy_to_uv.inverse()
-            sage: W = U.intersection(V)
-            sage: E = M.vector_bundle(2, 'E') # define vector bundle
-            sage: phi_U = E.trivialization('phi_U', domain=U) # define trivializations
-            sage: phi_V = E.trivialization('phi_V', domain=V)
-            sage: transf = phi_U.transition_map(phi_V, [[0,x],[x,0]])
-            sage: fU = phi_U.frame(); fV = phi_V.frame()
-            sage: s = E.section(name='s')
-            sage: s[fU,:] = [x+y, 0]
-            sage: s.add_comp_by_continuation(fV, U.intersection(V), c_uv)
-            sage: s != s
-            False
-            sage: s != s.copy()
-            False
-            sage: s != 0
-            True
-
-        """
-        return not (self == other)
+        # Fall back on default implementation:
+        return super()._richcmp_(self, other, op)
 
     def __pos__(self):
         r"""
@@ -2430,17 +2389,17 @@ class TrivialSection(FiniteRankFreeModuleElement, Section):
             sage: bool( s_D[1].expr() == s[1].expr() )
             True
 
-        but neither the chart functions representing the components (they are
-        defined on different charts)::
+        The chart functions representing the components can be compared on
+        the common domain::
 
             sage: s_D[1] == s[1]
-            False
+            True
 
-        nor the scalar fields representing the components (they are
-        defined on different open subsets)::
+        The scalar fields representing the components can be compared on the
+        common domain, too::
 
             sage: s_D[[1]] == s[[1]]
-            False
+            True
 
         The restriction of the section to its own domain is of course itself::
 
