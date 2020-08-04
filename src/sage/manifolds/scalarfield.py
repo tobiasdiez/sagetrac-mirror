@@ -2144,7 +2144,8 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
                 resu = type(self)(subdomain.scalar_field_algebra(),
                                   coord_expression=sexpress, name=self._name,
                                   latex_name=self._latex_name)
-                resu.set_immutable()  # restriction must be immutable, too
+                if self.is_immutable():
+                    resu.set_immutable()  # restriction must be immutable, too
                 self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
 
