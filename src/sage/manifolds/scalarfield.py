@@ -2144,8 +2144,7 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
                 resu = type(self)(subdomain.scalar_field_algebra(),
                                   coord_expression=sexpress, name=self._name,
                                   latex_name=self._latex_name)
-                if self.is_immutable():
-                    resu.set_immutable()  # restriction must be immutable, too
+                resu.set_immutable()  # restriction must be immutable, too
                 self._restrictions[subdomain] = resu
         return self._restrictions[subdomain]
 
@@ -3490,13 +3489,16 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
 
             sage: M = Manifold(2, 'M')
             sage: X.<x,y> = M.chart()
-            sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1})
+            sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1})  # disk
+            sage: V = M.open_subset('V', coord_def={X: x>0})  # half plane
             sage: f = M.scalar_field(x^2, name='f')
+            sage: fU = f.restrict(U)
             sage: f.set_immutable()
             sage: f.is_immutable()
             True
-            sage: fU = f.restrict(U)
             sage: fU.is_immutable()
+            True
+            sage: f.restrict(V).is_immutable()
             True
 
         """
@@ -3515,16 +3517,14 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
             sage: X.<x,y> = M.chart()
             sage: U = M.open_subset('U', coord_def={X: x^2+y^2<1})
             sage: f = M.scalar_field(x^2, name='f')
-            sage: fU = f.restrict(U)
-            sage: f.set_immutable()
-            sage: fU.is_immutable()
-            True
+            sage: g = M.scalar_field(x^2, name='g')
+            sage: f.set_immutable(); g.set_immutable()
 
-        Check whether equality on common domain implies equality of hash::
+        Check whether equality of scalar fields implies equality of hash::
 
-            sage: f == fU
+            sage: f == g
             True
-            sage: hash(f) == hash(fU)
+            sage: hash(f) == hash(g)
             True
 
         Let us check that ``f`` can be used as a dictionary key::
@@ -3536,5 +3536,4 @@ class ScalarField(CommutativeAlgebraElement, ModuleElementWithMutability):
         if self.is_mutable():
             raise ValueError('element must be immutable in order to be '
                              'hashable')
-        return hash((type(self).__name__, self._manifold))
-
+        return hash((type(self).__name__, self._domain))
