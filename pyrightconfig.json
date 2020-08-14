@@ -1,7 +1,0 @@
-{
-    "include": [
-      "src/sage/manifolds"
-    ],
-  
-    "pythonVersion": "3.7"
-  }
