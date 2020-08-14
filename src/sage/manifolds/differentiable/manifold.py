@@ -441,6 +441,9 @@ REFERENCES:
 
 from sage.categories.manifolds import Manifolds
 from sage.categories.homset import Hom
+from sage.manifolds.continuous_map import ContinuousMap
+from sage.manifolds.differentiable.diff_map import DiffMap
+from sage.manifolds.structure import RealDifferentialStructure
 from sage.rings.all import CC
 from sage.rings.real_mpfr import RR
 from sage.rings.infinity import infinity, minus_infinity
@@ -623,7 +626,7 @@ class DifferentiableManifold(TopologicalManifold):
         sage: TestSuite(M).run()
 
     """
-    def __init__(self, n, name, field, structure, base_manifold=None,
+    def __init__(self, n, name, field='real', structure=RealDifferentialStructure(), base_manifold=None,
                  diff_degree=infinity, latex_name=None, start_index=0,
                  category=None, unique_tag=None):
         r"""

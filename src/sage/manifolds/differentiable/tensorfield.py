@@ -59,6 +59,15 @@ from sage.structure.element import ModuleElementWithMutability
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
+    from sage.manifolds.differentiable.manifold import DifferentiableManifold
+    from sage.manifolds.differentiable.diff_map import DiffMap
+    from sage.tensor.modules.comp import Components
+    from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
+    from sage.manifolds.differentiable.symplectic_form import SymplecticForm
+
+TensorType = Tuple[int, int]
 class TensorField(ModuleElementWithMutability):
     r"""
     Tensor field along a differentiable manifold.
@@ -3706,10 +3715,10 @@ class TensorField(ModuleElementWithMutability):
             if point in dom:
                 return rst.at(point)
 
-    def up(self, metric, pos=None):
+    def up(self, non_degenerate_form:Union['PseudoRiemannianMetric', 'SymplecticForm'], pos: Optional[int] = None) -> 'TensorField':
         r"""
-        Compute a metric dual of the tensor field by raising some index with a
-        given metric.
+        Compute a dual of the tensor field by raising some index with the
+        given non-degenerate form (pseudo-riemaninan metric or symplectic form).
 
         If `T` is the tensor field, `(k,l)` its type and `p` the position of a
         covariant index (i.e. `k\leq p < k+l`), this method called with
@@ -3723,14 +3732,13 @@ class TensorField(ModuleElementWithMutability):
             T^{a_1\ldots a_k}_{\phantom{a_1\ldots a_k}\, b_1 \ldots b_{p-k}
             \, i \, b_{p-k+1}\ldots b_{l-1}},
 
-        `g^{ab}` being the components of the inverse metric.
+        `g^{ab}` being the components of the inverse metric or the Poisson tensor, repectively.
 
         The reverse operation is :meth:`TensorField.down`.
 
         INPUT:
 
-        - ``metric`` -- metric `g`, as an instance of
-          :class:`~sage.manifolds.differentiable.metric.PseudoRiemannianMetric`
+        - ``non_degenerate_form`` -- non-degenerate form `g`
         - ``pos`` -- (default: ``None``) position of the index (with the
           convention ``pos=0`` for the first index); if ``None``, the raising
           is performed over all the covariant indices, starting from the first
@@ -3844,19 +3852,26 @@ class TensorField(ModuleElementWithMutability):
             result = self
             for p in range(n_con, self._tensor_rank):
                 k = result._tensor_type[0]
-                result = result.up(metric, k)
+                result = result.up(non_degenerate_form, k)
             return result
-        if not isinstance(pos, (int, Integer)):
-            raise TypeError("the argument 'pos' must be an integer")
+        
         if pos<n_con or pos>self._tensor_rank-1:
             print("pos = {}".format(pos))
             raise ValueError("position out of range")
-        return self.contract(pos, metric.inverse(), 0)
 
-    def down(self, metric, pos=None):
+        from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
+        from sage.manifolds.differentiable.symplectic_form import SymplecticForm
+        if isinstance(non_degenerate_form, PseudoRiemannianMetric):
+            return self.contract(pos, non_degenerate_form.inverse(), 1)
+        elif isinstance(non_degenerate_form, SymplecticForm):
+            return self.contract(pos, non_degenerate_form.poisson(), 1)
+        else:
+            raise ValueError("The non-degenerate form has to be a metric or a symplectic form")
+
+    def down(self, non_degenerate_form:Union['PseudoRiemannianMetric', 'SymplecticForm'], pos: Optional[int] = None) -> 'TensorField':
         r"""
-        Compute a metric dual of the tensor field by lowering some index with a
-        given metric.
+        Compute a dual of the tensor field by lowering some index with a
+        given non-degenerate form (pseudo-riemaninan metric or symplectic form).
 
         If `T` is the tensor field, `(k,l)` its type and `p` the position of a
         contravariant index (i.e. `0\leq p < k`), this method called with
@@ -3866,18 +3881,17 @@ class TensorField(ModuleElementWithMutability):
         .. MATH::
 
             (T^\flat)^{a_1\ldots a_{k-1}}_{\phantom{a_1\ldots a_{k-1}}
-            \, b_1 \ldots b_{l+1}} = g_{b_1 i} \,
+            \, b_1 \ldots b_{l+1}} = g_{i b_1} \,
             T^{a_1\ldots a_{p} \, i \, a_{p+1}\ldots a_{k-1}}_{\phantom{a_1
             \ldots a_{p} \, i \, a_{p+1}\ldots a_{k-1}}\, b_2 \ldots b_{l+1}},
 
-        `g_{ab}` being the components of the metric tensor.
+        `g_{ab}` being the components of the metric tensor or the symplectic form, respectively.
 
         The reverse operation is :meth:`TensorField.up`.
 
         INPUT:
 
-        - ``metric`` -- metric `g`, as an instance of
-          :class:`~sage.manifolds.differentiable.metric.PseudoRiemannianMetric`
+        - ``non_degenerate_form`` -- non-degenerate form `g`
         - ``pos`` -- (default: ``None``) position of the index (with the
           convention ``pos=0`` for the first index); if ``None``, the lowering
           is performed over all the contravariant indices, starting from the
@@ -3989,14 +4003,14 @@ class TensorField(ModuleElementWithMutability):
             result = self
             for p in range(0, n_con):
                 k = result._tensor_type[0]
-                result = result.down(metric, k-1)
+                result = result.down(non_degenerate_form, k-1)
             return result
         if not isinstance(pos, (int, Integer)):
             raise TypeError("the argument 'pos' must be an integer")
         if pos<0 or pos>=n_con:
             print("pos = {}".format(pos))
             raise ValueError("position out of range")
-        return metric.contract(1, self, pos)
+        return non_degenerate_form.contract(0, self, pos)
 
     def divergence(self, metric=None):
         r"""

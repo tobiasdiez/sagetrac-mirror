@@ -506,7 +506,7 @@ class TopologicalManifold(ManifoldSubset):
 
         :mod:`sage.manifolds.manifold`
     """
-    def __init__(self, n, name, field, structure, base_manifold=None,
+    def __init__(self, n, name, field='real', structure=RealTopologicalStructure(), base_manifold=None,
                  latex_name=None, start_index=0, category=None,
                  unique_tag=None):
         r"""
@@ -531,7 +531,6 @@ class TopologicalManifold(ManifoldSubset):
             sage: TestSuite(U).run()
             sage: U.category() is M.category().Subobjects()
             True
-
         """
         # Initialization of the attributes _dim, _field, _field_type:
         self._dim = n
