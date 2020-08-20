@@ -26,19 +26,13 @@ usage() {
     echo "  file.[sage|py|spyx] -- run given .sage, .py or .spyx file"
     echo "  --advanced          -- list all command line options"
     echo "  -c <cmd>            -- Evaluates cmd as sage code"
-    echo "  --gap [...]         -- run Sage's Gap with given arguments"
-    echo "  --gp [...]          -- run Sage's PARI/GP calculator with given arguments"
     echo "  -h                  -- print this help message"
     echo "  --pip [...]         -- invoke pip, the Python package manager"
-    echo "  --maxima [...]      -- run Sage's Maxima with given arguments"
-    echo "  --mwrank [...]      -- run Sage's mwrank with given arguments"
     echo "  --notebook=[...]    -- start the Sage notebook (valid options are"
     echo "                         'default', 'jupyter', and 'export')"
     echo "                         Current default is 'export' from sagenb to jupyter"
     echo "  -n, --notebook      -- shortcut for --notebook=default"
     echo "  --python [...], --python3 [...] -- run the Python 3 interpreter"
-    echo "  -R [...]            -- run Sage's R with given arguments"
-    echo "  --singular [...]    -- run Sage's singular with given arguments"
     echo "  --nodotsage         -- run Sage without using the user's .sage directory:"
     echo "                         create and use a temporary .sage directory instead"
     echo "  -t [options] <--all|files|dir>"
@@ -310,15 +304,17 @@ usage_advanced() {
     echo
     echo "Running external programs:"
     echo
+    echo "  --sh -c APP [...]   -- run APP with the given arguments within"
+    echo "                         Sage's environment."
+    echo "                         APP could be, for example, 'gap3', 'sqlite3',"
+    echo "                         'polymake', 'kash', etc."
+    echo "                         If you are passing arguments, then enclose"
+    echo "                         in quotes: sage --sh -c \"APP ARGS\"."
     echo "  --cython [...]      -- run Cython with the given arguments"
     echo "  --ecl [...], --lisp [...]  -- run Sage's copy of ECL (Embeddable"
     echo "                                Common Lisp) with the given arguments"
     echo "  --gap [...]         -- run Sage's Gap with the given arguments"
-    echo "  --gap3 [...]        -- run Sage's Gap3 with the given arguments"
-    command -v gap3 &>/dev/null || \
-    echo "                         (not installed currently, run sage -i gap3)"
     echo "  --gdb               -- run Sage under the control of gdb"
-    echo "  --gdb-ipython       -- run Sage's IPython under the control of gdb"
     echo "  --git [...]         -- run Sage's Git with the given arguments"
     echo "  --gp [...]          -- run Sage's PARI/GP calculator with the"
     echo "                         given arguments"
@@ -327,23 +323,13 @@ usage_advanced() {
     echo "                         environment (not Sage), passing additional"
     echo "                         additional options to IPython"
     echo "  --jupyter [...]     -- run Sage's Jupyter with given arguments"
-    echo "  --kash [...]        -- run Sage's Kash with the given arguments"
-    command -v kash &>/dev/null || \
-    echo "                         (not installed currently, run sage -i kash)"
-    echo "  --M2 [...]          -- run Sage's Macaulay2 with the given arguments"
-    command -v M2 &>/dev/null || \
-    echo "                         (not installed currently, run sage -i macaulay2)"
     echo "  --maxima [...]      -- run Sage's Maxima with the given arguments"
     echo "  --mwrank [...]      -- run Sage's mwrank with the given arguments"
     echo "  --pip [...]         -- invoke pip, the Python package manager"
-    echo "  --polymake [...]    -- run Sage's Polymake with given arguments"
-    command -v polymake &>/dev/null || \
-    echo "                         (not installed currently, run sage -i polymake)"
     echo "  --python [...], --python3 [...]"
     echo "                      -- run the Python 3 interpreter"
     echo "  -R [...]            -- run Sage's R with the given arguments"
     echo "  --singular [...]    -- run Sage's singular with the given arguments"
-    echo "  --sqlite3 [...]     -- run Sage's sqlite3 with given arguments"
     echo
     echo "Running the notebook:"
     echo
@@ -502,123 +488,45 @@ fi
 # Run Sage's versions of Python, pip, IPython, Jupyter.
 #####################################################################
 
-if [ "$1" = '-pip' -o "$1" = '--pip' ]; then
-    shift
-    exec sage-python -m pip "$@"
-fi
-
-if [ "$1" = '--pip3' ]; then
-    shift
-    exec "$SAGE_LOCAL"/bin/python3 -m pip "$@"
-fi
-
-if [ "$1" = '-python' -o "$1" = '--python' ]; then
-    shift
-    if [ "$SAGE_PYTHON3" = 'yes' ]; then
-        exec "$SAGE_LOCAL"/bin/python3 "$@"
-    else
-        exec "$SAGE_LOCAL"/bin/python2 "$@"
-    fi
-fi
-
-if [ "$1" = '-python3' -o "$1" = '--python3' ]; then
-    shift
-    exec "$SAGE_LOCAL"/bin/python3 "$@"
-fi
-
-if [ "$1" = '-ipython' -o "$1" = '--ipython' ]; then
-    shift
-    exec "$SAGE_LOCAL"/bin/ipython "$@"
-fi
-
-if [ "$1" = '-ipython3' -o "$1" = '--ipython3' ]; then
-    shift
-    exec "$SAGE_LOCAL"/bin/ipython3 "$@"
-fi
-
-if [ "$1" = '-jupyter' -o "$1" = '--jupyter' ]; then
-    shift
-    exec "$SAGE_LOCAL"/bin/jupyter "$@"
-fi
-
-#####################################################################
-# Run Sage's versions of its component packages
-#####################################################################
-
-if [ "$1" = "-cython" -o "$1" = '--cython' -o "$1" = '-pyrex' -o "$1" = "--pyrex" ]; then
-    shift
-    exec cython "$@"
-fi
-
-if [ "$1" = '-gap' -o "$1" = '--gap' ]; then
-    shift
-    exec gap "$@"
-fi
-
-if [ "$1" = '-gap3' -o "$1" = '--gap3' ]; then
-    shift
-    exec gap3 "$@"
-fi
-
-if [ "$1" = '-gp' -o "$1" = '--gp' ]; then
-    shift
-    exec gp "$@"
-fi
-
-if [ "$1" = '-polymake' -o "$1" = '--polymake' ]; then
-    shift
-    exec polymake "$@"
-fi
-
-if [ "$1" = '-singular' -o "$1" = '--singular' ]; then
-    shift
-    exec Singular "$@"
-fi
-
-if [ "$1" = '-sqlite3' -o "$1" = '--sqlite3' ]; then
-    shift
-    exec sqlite3 "$@"
-fi
-
-if [ "$1" = '-ecl' -o "$1" = '--ecl' ]; then
-    shift
-    exec ecl "$@"
-fi
-
-if [ "$1" = '-lisp' -o "$1" = '--lisp' ]; then
-    shift
-    exec ecl "$@"
-fi
-
-if [ "$1" = '-kash' -o "$1" = '--kash' ]; then
-    shift
-    exec kash "$@"
-fi
-
-if [ "$1" = '-maxima' -o "$1" = '--maxima' ]; then
-    shift
-    exec maxima "$@"
-fi
-
-if [ "$1" = '-mwrank' -o "$1" = '--mwrank' ]; then
-    shift
-    exec mwrank "$@"
-fi
-
-if [ "$1" = '-M2' -o "$1" = '--M2' ]; then
-    shift
-    exec M2 "$@"
-fi
-
-if [ "$1" = '-R' -o "$1" = '--R' ]; then
-    shift
-    exec R "$@"
-fi
-
-if [ "$1" = '-git' -o "$1" = '--git' ]; then
-    shift
-    exec git "$@"
-fi
+case $1 in
+    -pyrex|--pyrex)
+        echo >&2 "The --pyrex option is deprecated: use 'sage --cython ...' instead"
+        shift
+        exec cython "$@"
+        ;;
+    -ipython|--ipython|-ipython3|--ipython3|-jupyter|--jupyter|-pip|--pip|-pip3|--pip3|-python|--python|-python3|--python3)
+        # Python and friends
+        app=`echo $1 | sed "s/^-*//"`
+        shift
+        exec $app "$@"
+        ;;
+    -cython|--cython|-ecl|--ecl|-gap|--gap|-git|--git|-gp|--gp|-maxima|--maxima|-mwrank|--mwrank|-R|--R|-singular|--singular)
+        # Standard packages
+        app=`echo $1 | sed "s/^-*//"`
+        shift
+        exec $app "$@"
+        ;;
+    -sqlite3|--sqlite3)
+        # Standard package, should be present on the system
+        app=`echo $1 | sed "s/^-*//"`
+        echo >&2 "WARNING: this usage is deprecated. Use 'sage --sh -c \"$app ...\"' instead"
+        shift
+        exec $app "$@"
+        ;;
+    -lisp|--lisp)
+        # lisp: run ecl
+        shift
+        echo >&2 "WARNING: this usage is deprecated. Use 'sage --ecl ...' instead"
+        exec ecl "$@"
+        ;;
+    -gap3|--gap3|-polymake|--polymake|-kash|--kash|-M2|--M2|-scons|--scons)
+        # optional/experimental packages
+        app=`echo $1 | sed "s/^-*//"`
+        echo >&2 "WARNING: this usage is deprecated. Use 'sage --sh -c \"$app ...\"' instead"
+        shift
+        exec $app "$@"
+        ;;
+esac
 
 #####################################################################
 # sage --sh and sage --buildsh
