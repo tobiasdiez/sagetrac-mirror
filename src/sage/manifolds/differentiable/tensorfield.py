@@ -52,7 +52,7 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 from __future__ import print_function
-from typing import Optional, Tuple, TYPE_CHECKING, Union
+from typing import Optional, Tuple, TYPE_CHECKING
 
 from sage.rings.integer import Integer
 from sage.rings.integer_ring import ZZ
@@ -65,7 +65,6 @@ if TYPE_CHECKING:
     from sage.manifolds.differentiable.manifold import DifferentiableManifold
     from sage.manifolds.differentiable.diff_map import DiffMap
     from sage.tensor.modules.comp import Components
-    from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
 
 TensorType = Tuple[int, int]
 class TensorField(ModuleElementWithMutability):

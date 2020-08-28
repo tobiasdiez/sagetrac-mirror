@@ -441,7 +441,6 @@ REFERENCES:
 
 from sage.categories.manifolds import Manifolds
 from sage.categories.homset import Hom
-from sage.manifolds.continuous_map import ContinuousMap
 from sage.manifolds.differentiable.diff_map import DiffMap
 from sage.rings.all import CC
 from sage.rings.real_mpfr import RR
@@ -451,7 +450,6 @@ from sage.manifolds.manifold import TopologicalManifold
 from sage.manifolds.differentiable.mixed_form_algebra import MixedFormAlgebra
 from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
 from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
-from sage.misc.cachefunc import cached_method
 
 ###############################################################################
 

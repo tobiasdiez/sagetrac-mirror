@@ -341,7 +341,6 @@ from sage.manifolds.structure import(
                             DifferentialStructure, RealDifferentialStructure)
 from typing import Union, TYPE_CHECKING, Optional, overload
 if TYPE_CHECKING:
-    from sage.manifolds.manifold import TopologicalManifold
     from sage.manifolds.differentiable.manifold import DifferentiableManifold
     from sage.manifolds.continuous_map import ContinuousMap
     from sage.manifolds.differentiable.diff_map import DiffMap
