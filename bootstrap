@@ -75,7 +75,19 @@ install_config_rpath() {
 bootstrap () {
     rm -f m4/sage_spkg_configures.m4
     spkg_configures=""
-    for filename in $(find build/pkgs -type f -name type); do
+    # --disable-SPKG options for standard packages
+    for filename in $(find build/pkgs -type f -name type | sort); do
+        pkgtype="$(cat $filename)"
+        pkgname="$(echo $filename | cut -d/ -f3)"
+        case "$pkgtype" in
+            standard)
+                spkg_configures="$spkg_configures
+SAGE_SPKG_ENABLE([$pkgname], [$pkgtype])"
+                ;;
+        esac
+    done
+    # --enable-SPKG options
+    for filename in $(find build/pkgs -type f -name type | sort); do
         pkgtype="$(cat $filename)"
         pkgname="$(echo $filename | cut -d/ -f3)"
         case "$pkgtype" in
