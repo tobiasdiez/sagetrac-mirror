@@ -453,15 +453,24 @@ $(1)-no-deps:
 		$(if $(filter $(1),$(TOOLCHAIN_DEPS)),--keep-existing) \
 		$(1)-$(2)' '$$(SAGE_LOGS)/$(1)-$(2).log'
 
-$(1)-clean:
+$(1)-uninstall:
 	sage-spkg-uninstall $(if $(filter $(1),$(TOOLCHAIN_DEPS)),--keep-files) \
 		$(1) '$(SAGE_LOCAL)'
 
 .PHONY: $(1) $(1)-clean $(1)-build-deps $(1)-no-deps
 endef #################################################################
 
+define NORMAL_PACKAGE_clean_templ #####################################
+$(1)-clean:
+	@echo Deprecation warning: Please use 'make $(1)-uninstall' instead of 'make $(1)-clean'
+	+$(MAKE_REC) $(1)-uninstall
+endef #################################################################
+
 $(foreach pkgname, $(NORMAL_PACKAGES),\
 	$(eval $(call NORMAL_PACKAGE_templ,$(pkgname),$(vers_$(pkgname)),\
+	                                   $(call pkg_deps,$(pkgname)))))
+$(foreach pkgname, $(NORMAL_PACKAGES),\
+	$(eval $(call NORMAL_PACKAGE_clean_templ,$(pkgname),$(vers_$(pkgname)),\
 	                                   $(call pkg_deps,$(pkgname)))))
 
 ifdef DEBUG_RULES
