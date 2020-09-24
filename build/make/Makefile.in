@@ -519,7 +519,7 @@ debug-check:
 # <pkgname>: <dependencies>
 #     $(AM_V_at)sage-logger -p 'sage --pip install ...' '$(SAGE_LOGS)/<pkgname>.log'
 #
-# <pkgname>-clean:
+# <pkgname>-uninstall:
 #     -sage --pip uninstall -y ...
 
 # Positional arguments:
@@ -534,7 +534,7 @@ $(1): $(2)
 $(1)-no-deps:
 	$(AM_V_at)sage-logger -p 'sage --pip install -r "$$(SAGE_ROOT)/build/pkgs/$(1)/requirements.txt"' '$$(SAGE_LOGS)/$(1).log'
 
-$(1)-clean:
+$(1)-uninstall:
 	-sage --pip uninstall -y -r '$$(SAGE_ROOT)/build/pkgs/$(1)/requirements.txt'
 
 .PHONY: $(1) $(1)-clean $(1)-build-deps $(1)-no-deps
@@ -542,6 +542,9 @@ endef
 
 $(foreach pkgname,$(PIP_PACKAGES),\
 	$(eval $(call PIP_PACKAGE_templ,$(pkgname),$(call pkg_deps,$(pkgname)))))
+$(foreach pkgname, $(PIP_PACKAGES),\
+	$(eval $(call NORMAL_PACKAGE_clean_templ,$(pkgname),$(vers_$(pkgname)),\
+	                                   $(call pkg_deps,$(pkgname)))))
 
 ifdef DEBUG_RULES
 $(info # Rules for pip packages)
