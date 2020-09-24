@@ -550,61 +550,13 @@ $(foreach pkgname,$(PIP_PACKAGES),\
 endif
 
 # ============================= script packages ==============================
-# Generate build rules for 'script' packages; this template is used to generate
-# three rules in the form:
-#
-# $(INST)/<pkgname>-<pkgvers>: <dependencies>
-#     $(AM_V_at)cd '$SAGE_ROOT' && \\
-#         . '$SAGE_ROOT/src/bin/sage-env-config' && \\
-#         . '$SAGE_ROOT/src/bin/sage-env' && \\
-#         sage-logger -p '$SAGE_ROOT/build/pkgs/<pkgname>/spkg-install' '$(SAGE_LOGS)/<pkgname>.log'
-#
-# <pkgname>: $(INST)/<pkgname>-<pkgvers>
-#
-# <pkgname>-clean:
-#     -$(AM_V_at)cd '$SAGE_ROOT' && \\
-#         . '$SAGE_ROOT/src/bin/sage-env-config' && \\
-#         . '$SAGE_ROOT/src/bin/sage-env' && \\
-#         '$SAGE_ROOT/build/pkgs/$PKG_NAME/spkg-uninstall'
-
-# Positional arguments:
-#     $(1): package name
-#     $(2): package version
-#     $(3): package dependencies
-define SCRIPT_PACKAGE_templ
-$(1)-build-deps: $(3)
-
-$$(INST)/$(1)-$(2): $(3)
-	+$(MAKE_REC) $(1)-no-deps
-
-$(1): $$(INST)/$(1)-$(2)
-
-$(1)-no-deps:
-	$(AM_V_at)cd '$$(SAGE_ROOT)/build/pkgs/$(1)' && \
-		. '$$(SAGE_ROOT)/src/bin/sage-env-config' && \
-		. '$$(SAGE_ROOT)/src/bin/sage-env' && \
-		. '$$(SAGE_ROOT)/build/bin/sage-build-env-config' && \
-		sage-logger -p '$$(SAGE_ROOT)/build/pkgs/$(1)/spkg-install' '$$(SAGE_LOGS)/$(1)-$(2).log'
-	touch "$$(INST)/$(1)-$(2)"
-
-$(1)-uninstall:
-	-$(AM_V_at)cd '$$(SAGE_ROOT)/build/pkgs/$(1)' && \
-		. '$$(SAGE_ROOT)/src/bin/sage-env-config' && \
-		. '$$(SAGE_ROOT)/src/bin/sage-env' && \
-		. '$$(SAGE_ROOT)/build/bin/sage-build-env-config' && \
-		'$$(SAGE_ROOT)/build/pkgs/$(1)/spkg-uninstall'
-	-rm -f "$$(INST)/$(1)-$(2)"
-
-.PHONY: $(1) $(1)-uninstall $(1)-build-deps $(1)-no-deps $(1)-clean
-endef
-
 $(foreach pkgname,$(SCRIPT_PACKAGES),\
-	$(eval $(call SCRIPT_PACKAGE_templ,$(pkgname),$(vers_$(pkgname)),$(call pkg_deps,$(pkgname)))))
+	$(eval $(call NORMAL_PACKAGE_templ,$(pkgname),$(vers_$(pkgname)),$(call pkg_deps,$(pkgname)))))
 
 ifdef DEBUG_RULES
 $(info # Rules for script packages)
 $(foreach pkgname,$(SCRIPT_PACKAGES),\
-	$(info $(call SCRIPT_PACKAGE_templ,$(pkgname),$(vers_$(pkgname)),$(call pkg_deps,$(pkgname)))))
+	$(info $(call NORMAL_PACKAGE_templ,$(pkgname),$(vers_$(pkgname)),$(call pkg_deps,$(pkgname)))))
 endif
 
 # sagelib depends on this so that its install script is always executed
