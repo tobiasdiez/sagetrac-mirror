@@ -400,7 +400,7 @@ pkg_deps = \
 # <pkgname>-no-deps:
 #     +$(AM_V_at)sage-logger -p '$(SAGE_SPKG) <pkgname>-<pkgvers>' '$(SAGE_LOGS)/<pkgname>-<pkgvers>.log'
 #
-# <pkgname>-clean:
+# <pkgname>-uninstall:
 #     sage-spkg-uninstall <pkgname> '$(SAGE_LOCAL)'
 #
 # So <pkgname>-build-deps installs just the dependencies, while
@@ -415,7 +415,7 @@ pkg_deps = \
 #
 # python3: $(INST)/python3-3.7.3
 #
-# python3-clean:
+# python3-uninstall:
 #     sage-spkg-uninstall python3 '$(SAGE_LOCAL)'
 #
 # Note: In these rules the $(INST)/<pkgname>-<pkgvers> target is used
