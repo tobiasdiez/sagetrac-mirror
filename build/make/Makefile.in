@@ -457,7 +457,7 @@ $(1)-uninstall:
 	sage-spkg-uninstall $(if $(filter $(1),$(TOOLCHAIN_DEPS)),--keep-files) \
 		$(1) '$(SAGE_LOCAL)'
 
-.PHONY: $(1) $(1)-clean $(1)-build-deps $(1)-no-deps
+.PHONY: $(1) $(1)-clean $(1)-uninstall $(1)-build-deps $(1)-no-deps
 endef #################################################################
 
 define NORMAL_PACKAGE_clean_templ #####################################
@@ -537,7 +537,7 @@ $(1)-no-deps:
 $(1)-uninstall:
 	-sage --pip uninstall -y -r '$$(SAGE_ROOT)/build/pkgs/$(1)/requirements.txt'
 
-.PHONY: $(1) $(1)-clean $(1)-build-deps $(1)-no-deps
+.PHONY: $(1) $(1)-clean $(1)-uninstall $(1)-build-deps $(1)-no-deps
 endef
 
 $(foreach pkgname,$(PIP_PACKAGES),\
