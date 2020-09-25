@@ -231,24 +231,13 @@ sdh_store_and_pip_install_wheel() {
     if [ "$*" != "." ]; then
         sdh_die "Error: sdh_store_and_pip_install_wheel requires . as only argument"
     fi
-    wheel=""
-    for w in dist/*.whl; do
-        if [ -n "$wheel" ]; then
-            sdh_die "Error: more than one wheel found after building"
-        fi
-        if [ -f "$w" ]; then
-            wheel="$w"
-        fi
+    for wheel in dist/*.whl; do
+        $sudo sage-pip-install $root "$wheel" || \
+            sdh_die "Error installing $wheel"
+        mkdir -p "${SAGE_DESTDIR}${SAGE_SPKG_WHEELS}" && \
+            $sudo mv "$wheel" "${SAGE_DESTDIR}${SAGE_SPKG_WHEELS}/" || \
+            sdh_die "Error storing $wheel"
     done
-    if [ -z "$wheel" ]; then
-        sdh_die "Error: no wheel found after building"
-    fi
-
-    $sudo sage-pip-install $root "$wheel" || \
-        sdh_die "Error installing $wheel"
-    mkdir -p "${SAGE_DESTDIR}${SAGE_SPKG_WHEELS}" && \
-        $sudo mv "$wheel" "${SAGE_DESTDIR}${SAGE_SPKG_WHEELS}/" || \
-        sdh_die "Error storing $wheel"
 }
 
 sdh_cmake() {
