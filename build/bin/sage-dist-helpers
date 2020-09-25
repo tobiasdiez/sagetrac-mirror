@@ -208,9 +208,10 @@ sdh_pip_install() {
     else
         local sudo="$SAGE_SUDO"
     fi
-    $sudo sage-pip-uninstall "$@" || \
-        sdh_die "Error uninstalling a previous version of $PKG_NAME"
-
+    if [ "$*" = "." ]; then
+        $sudo sage-pip-uninstall "$@" || \
+            sdh_die "Error uninstalling a previous version of $PKG_NAME"
+    fi
     mkdir -p dist
     rm -f dist/*.whl
     sage-python23 -m pip wheel --wheel-dir=dist --no-binary :all: --verbose --no-deps --no-index --isolated --no-build-isolation "$@" || \
