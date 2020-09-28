@@ -148,17 +148,8 @@ please join the sage-devel discussion list - see
 http://groups.google.com/group/sage-devel
 The Sage community would also appreciate any patches you submit]]);;
 
-*-*-freebsd*)
-AC_MSG_ERROR([[
-You are attempting to build Sage on the FreeBSD operating system,
-which is not a supported platform for Sage yet, though
-developers are working on adding FreeBSD support. Things may or
-may not work. If you would like to help port Sage to FreeBSD,
-please join the sage-devel discussion list - see
-http://groups.google.com/group/sage-devel
-The Sage community would also appreciate any patches you submit]]);;
-
 # The following are all supported platforms.
+*-*-freebsd*);;
 *-*-linux*);;
 *-*-darwin*);;
 *-*-solaris*);;
@@ -314,9 +305,7 @@ SAGE_CHECK_CONDA_COMPILERS
 AC_PROG_CC()
 AC_PROG_CPP()
 AC_PROG_CXX()
-# Search for gfortran-9 first. #30067
-# This is a temporary workaround until we support gfortran 10.
-AC_PROG_FC([gfortran-9 gfortran g95 xlf95 f95 fort ifort ifc efc pgfortran pgf95 lf95 ftn nagfor xlf90 f90 pgf90 pghpf epcf90 g77 xlf f77 frt pgf77 cf77 fort77 fl32 af77])
+AC_PROG_FC()
 
 AC_SUBST(CC)
 AC_SUBST(FC)

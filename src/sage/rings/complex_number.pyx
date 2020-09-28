@@ -44,6 +44,8 @@ import sage.rings.infinity as infinity
 from sage.libs.mpmath.utils cimport mpfr_to_mpfval
 from sage.rings.integer_ring import ZZ
 
+from sage.misc.superseded import deprecated_function_alias
+
 cimport gmpy2
 gmpy2.import_gmpy2()
 
@@ -234,6 +236,15 @@ cdef class ComplexNumber(sage.structure.element.FieldElement):
             True
         """
         return self.str()
+
+    def _mathematica_init_(self):
+        """
+        EXAMPLES::
+
+            sage: mathematica(CC(3.5e-15, 2.3e15))  # indirect doctest, optional - mathematica
+            3.5*^-15 + 2.3*^15*I
+        """
+        return self.str(e='*^')
 
     def _maxima_init_(self, I=None):
         """
@@ -1440,8 +1451,6 @@ cdef class ComplexNumber(sage.structure.element.FieldElement):
 
             sage: (1+CC(I)).cot()
             0.217621561854403 - 0.868014142895925*I
-            sage: (1+CC(I)).cotan()
-            0.217621561854403 - 0.868014142895925*I
             sage: i = ComplexField(200).0
             sage: (1+i).cot()
             0.21762156185440268136513424360523807352075436916785404091068 - 0.86801414289592494863584920891627388827343874994609327121115*I
@@ -1458,7 +1467,7 @@ cdef class ComplexNumber(sage.structure.element.FieldElement):
         """
         return ~(self.tan())
 
-    cotan = cot # provide this alias for backward compatibility in #29409
+    cotan = deprecated_function_alias(29412, cot)
 
     def cos(self):
         """
