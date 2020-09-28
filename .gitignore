@@ -114,3 +114,12 @@ gitlab-build-docker.log
 /.tox
 /prefix
 worktree*
+
+src/**/*.so
+src/**/*.c
+src/**/*.cpp
+src/**/*.h
+src/.venv
+sage.egg-info
+build/temp.*/
+build/lib.*/
