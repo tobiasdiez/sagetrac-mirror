@@ -507,6 +507,7 @@ for lib in "\$SAGE_ROOT/build/bin/sage-dist-helpers" "\$SAGE_SRC/bin/sage-env-co
         exit 1
     fi
 done
+export PATH="$SAGE_INST_LOCAL/bin:$PATH"
 
 sdh_guard
 if [ \$? -ne 0 ]; then

@@ -21,9 +21,8 @@ ifndef SAGE_PKGCONFIG
 $(error This Makefile needs to be invoked by build/make/install)
 endif
 
-# Directory to keep track of which packages are installed
-SAGE_SPKG_INST = $(SAGE_LOCAL)/var/lib/sage/installed
-SAGE_VENV_INST = $(SAGE_VENV)/var/lib/sage/installed
+# Directory to keep track of which packages are installed - relative to installation prefix
+SPKG_INST_RELDIR = var/lib/sage/installed
 
 # Aliases for mutually exclusive standard packages selected at configure time
 TOOLCHAIN = @SAGE_TOOLCHAIN@
@@ -107,7 +106,13 @@ PIP_PACKAGES = @SAGE_PIP_PACKAGES@
 # Packages that use the 'script' package build rules
 SCRIPT_PACKAGES = @SAGE_SCRIPT_PACKAGES@
 
+# Generate variables for installation locations
 
+$(foreach pkgname,$(BUILT_PACKAGES) $(DUMMY_PACKAGES),\
+	$(eval local_$(pkgname) = $(SAGE_LOCAL)))
+# Override this for Python packages, which we install in the SAGE_VENV tree.
+$(foreach pkgname,$(PYTHON_PACKAGES),\
+	$(eval local_$(pkgname) = $(SAGE_VENV)))
 
 # Generate the actual inst_<pkgname> variables; for each package that is
 # actually built this generates a line like:
@@ -126,25 +131,20 @@ SCRIPT_PACKAGES = @SAGE_SCRIPT_PACKAGES@
 # inst_git = $(INST)/.dummy
 
 $(foreach pkgname,$(BUILT_PACKAGES) $(DUMMY_PACKAGES),\
-	$(eval real_inst_$(pkgname) = $$(SAGE_SPKG_INST)/$(pkgname)-$(vers_$(pkgname))))
-# Override this for Python packages, for which we keep installation records
-# in the SAGE_VENV tree.
-$(foreach pkgname,$(PYTHON_PACKAGES),\
-	$(eval inst_$(pkgname) = $$(SAGE_VENV_INST)/$(pkgname)-$(vers_$(pkgname))))
-
+	$(eval real_inst_$(pkgname) = $(local_$(pkgname))/$(SPKG_INST_RELDIR)/$(pkgname)-$(vers_$(pkgname))))
 $(foreach pkgname,$(BUILT_PACKAGES),\
 	$(eval inst_$(pkgname) = $(real_inst_$(pkgname))))
 $(foreach pkgname,$(DUMMY_PACKAGES),\
-	$(eval inst_$(pkgname) = $$(SAGE_SPKG_INST)/.dummy))
+	$(eval inst_$(pkgname) = $(SAGE_LOCAL)/$(SPKG_INST_RELDIR)/.dummy))
 
 # Override this for pip packages, for which we do not keep an installation record
 # in addition to what pip is already doing.
 $(foreach pkgname,$(PIP_PACKAGES),\
-	$(eval real_inst_$(pkgname) = $(pkgname))
+	$(eval real_inst_$(pkgname) = $(pkgname))\
 	$(eval inst_$(pkgname) = $(pkgname)))
 
 # Dummy target for packages which are not installed
-$(SAGE_SPKG_INST)/.dummy:
+$(SAGE_LOCAL)/$(SPKG_INST_RELDIR)/.dummy:
 	touch $@
 
 
@@ -458,14 +458,16 @@ $$(real_inst_$(1)): $(3)
 
 $(1): $$(real_inst_$(1))
 
+# SAGE_INST_LOCAL should really be passed as an option to
+# sage-spkg, like it is done for sage-spkg-uninstall below
 $(1)-no-deps:
-	+$(AM_V_at)sage-logger -p 'SAGE_CHECK=$$(SAGE_CHECK_$(1)) $$(SAGE_SPKG) $$(SAGE_SPKG_OPTIONS) \
+	+$(AM_V_at)sage-logger -p 'SAGE_CHECK=$$(SAGE_CHECK_$(1)) SAGE_INST_LOCAL=$$(local_$(1)) PATH=$$(local_$(1))/bin:$$$$PATH $$(SAGE_SPKG) $$(SAGE_SPKG_OPTIONS) \
 		$(if $(filter $(1),$(TOOLCHAIN_DEPS)),--keep-existing) \
 		$(1)-$(2)' '$$(SAGE_LOGS)/$(1)-$(2).log'
 
 $(1)-clean:
-	sage-spkg-uninstall $(if $(filter $(1),$(TOOLCHAIN_DEPS)),--keep-files) \
-		$(1) '$(SAGE_LOCAL)'
+	SAGE_INST_LOCAL=$$(local_$(1)) sage-spkg-uninstall $(if $(filter $(1),$(TOOLCHAIN_DEPS)),--keep-files) \
+		$(1) '$$(local_$(1))'
 
 .PHONY: $(1) $(1)-clean $(1)-build-deps $(1)-no-deps
 endef #################################################################
