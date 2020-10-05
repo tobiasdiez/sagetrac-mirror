@@ -110,6 +110,9 @@ SAGE_DUMMY_PACKAGES=''
 # Standard packages
 SAGE_STANDARD_PACKAGES=''
 
+# Python packages
+SAGE_PYTHON_PACKAGES=''
+
 # List of currently installed and to-be-installed optional packages - filled in SAGE_SPKG_ENABLE
 #SAGE_OPTIONAL_INSTALLED_PACKAGES
 # List of optional packages to be uninstalled - filled in SAGE_SPKG_ENABLE
@@ -148,6 +151,13 @@ for DIR in $SAGE_ROOT/build/pkgs/*; do
     SPKG_VERSION=$(newest_version $SPKG_NAME)
 
     in_sdist=no
+    is_python_package=no
+
+    if test -f "$DIR/requirements.txt" -o -f "$DIR/install-requires.txt"; then
+        is_python_package=yes
+        SAGE_PYTHON_PACKAGES="${SAGE_PYTHON_PACKAGES} \\$(printf '\n    ')${SPKG_NAME}"
+        dnl TODO: Use spkg_inst relative to SAGE_VENV instead of SAGE_LOCAL
+    fi
 
     uninstall_message=""
     # Check consistency of 'DIR/type' file
@@ -317,6 +327,7 @@ AC_SUBST([SAGE_PIP_PACKAGES])
 AC_SUBST([SAGE_SCRIPT_PACKAGES])
 AC_SUBST([SAGE_BUILT_PACKAGES])
 AC_SUBST([SAGE_DUMMY_PACKAGES])
+AC_SUBST([SAGE_PYTHON_PACKAGES])
 AC_SUBST([SAGE_STANDARD_PACKAGES])
 AC_SUBST([SAGE_OPTIONAL_INSTALLED_PACKAGES])
 AC_SUBST([SAGE_OPTIONAL_CLEANED_PACKAGES])
