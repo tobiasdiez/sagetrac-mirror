@@ -363,7 +363,7 @@ class AbstractArgumentGroup(UniqueRepresentation, Parent):
 
             sage: from sage.groups.misc_gps.argument_groups import UnitCircleGroup
             sage: UnitCircleGroup(RR).base()  # indirect doctest
-            Real Field with 53 bits of precision
+            Real Floating-Point Field with 53 bits of precision
         """
         super(AbstractArgumentGroup, self).__init__(category=category,
                                                     base=base)
@@ -521,12 +521,12 @@ class UnitCirclePoint(AbstractArgument):
             e^(2*pi*0.200000000000000)
             sage: _.parent()
             Unit Circle Group with Exponents in
-            Real Field with 53 bits of precision modulo ZZ
+            Real Floating-Point Field with 53 bits of precision modulo ZZ
             sage: C(exponent=0.1)^QQ(2/1)
             e^(2*pi*0.200000000000000)
             sage: _.parent()
             Unit Circle Group with Exponents in
-            Real Field with 53 bits of precision modulo ZZ
+            Real Floating-Point Field with 53 bits of precision modulo ZZ
 
             sage: U = RootsOfUnityGroup()
             sage: a = U(exponent=1/7); a
@@ -540,7 +540,7 @@ class UnitCirclePoint(AbstractArgument):
             e^(2*pi*0.0833333333333333)
             sage: _.parent()
             Unit Circle Group with Exponents in
-            Real Field with 53 bits of precision modulo ZZ
+            Real Floating-Point Field with 53 bits of precision modulo ZZ
 
             sage: U(exponent=1/3)^x
             (1/2*I*sqrt(3) - 1/2)^x
@@ -631,7 +631,7 @@ class UnitCircleGroup(AbstractArgumentGroup):
         sage: from sage.groups.misc_gps.argument_groups import UnitCircleGroup
 
         sage: R = UnitCircleGroup(RR); R
-        Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+        Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
         sage: R(exponent=2.42)
         e^(2*pi*0.420000000000000)
 
@@ -651,7 +651,7 @@ class UnitCircleGroup(AbstractArgumentGroup):
 
             sage: from sage.groups.misc_gps.argument_groups import UnitCircleGroup
             sage: UnitCircleGroup(RR)  # indirect doctest
-            Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+            Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
         """
         return 'Unit Circle Group with Exponents in {} modulo ZZ'.format(self.base())
 
@@ -809,12 +809,12 @@ class UnitCircleGroup(AbstractArgumentGroup):
             sage: C = UnitCircleGroup(QQ)
             sage: C._create_element_in_extension_(2.12).parent()
             Unit Circle Group with Exponents in
-            Real Field with 53 bits of precision modulo ZZ
+            Real Floating-Point Field with 53 bits of precision modulo ZZ
 
             sage: U = RootsOfUnityGroup()
             sage: U._create_element_in_extension_(2.12).parent()
             Unit Circle Group with Exponents in
-            Real Field with 53 bits of precision modulo ZZ
+            Real Floating-Point Field with 53 bits of precision modulo ZZ
         """
         if exponent.parent() is self.base():
             parent = self
@@ -858,7 +858,7 @@ class UnitCircleGroup(AbstractArgumentGroup):
               Unit Circle Group with Exponents in Rational Field modulo ZZ
             Sign Group
               has no coerce map from
-              Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+              Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
             Group of Roots of Unity
               has coerce map from
               Sign Group
@@ -870,7 +870,7 @@ class UnitCircleGroup(AbstractArgumentGroup):
               Unit Circle Group with Exponents in Rational Field modulo ZZ
             Group of Roots of Unity
               has no coerce map from
-              Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+              Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
             Unit Circle Group with Exponents in Rational Field modulo ZZ
               has coerce map from
               Sign Group
@@ -882,19 +882,19 @@ class UnitCircleGroup(AbstractArgumentGroup):
               Unit Circle Group with Exponents in Rational Field modulo ZZ
             Unit Circle Group with Exponents in Rational Field modulo ZZ
               has no coerce map from
-              Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
-            Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+              Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
+            Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
               has coerce map from
               Sign Group
-            Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+            Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
               has coerce map from
               Group of Roots of Unity
-            Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+            Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
               has coerce map from
               Unit Circle Group with Exponents in Rational Field modulo ZZ
-            Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+            Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
               has coerce map from
-              Unit Circle Group with Exponents in Real Field with 53 bits of precision modulo ZZ
+              Unit Circle Group with Exponents in Real Floating-Point Field with 53 bits of precision modulo ZZ
         """
         if isinstance(R, UnitCircleGroup):
             return self.base().has_coerce_map_from(R.base())
@@ -1361,7 +1361,7 @@ class ArgumentByElementGroup(AbstractArgumentGroup):
             Rational Field
             sage: C._create_element_in_extension_(0.23).parent()
             Unit Circle Group with Argument of Elements in
-            Real Field with 53 bits of precision
+            Real Floating-Point Field with 53 bits of precision
 
             sage: C = ArgumentByElementGroup(RR)
             sage: C._create_element_in_extension_(CC(0.23)).parent()
@@ -1543,7 +1543,7 @@ class Sign(AbstractArgument):
             sage: S(-1) * RR(4)
             -4.00000000000000
             sage: _.parent()
-            Real Field with 53 bits of precision
+            Real Floating-Point Field with 53 bits of precision
             sage: S(-1) * CC(4)
             -4.00000000000000
             sage: _.parent()
@@ -1787,10 +1787,10 @@ class ArgumentGroupFactory(UniqueFactory):
 
         sage: ArgumentGroup(CC)
         Unit Circle Group with Exponents in
-        Real Field with 53 bits of precision modulo ZZ
+        Real Floating-Point Field with 53 bits of precision modulo ZZ
         sage: ArgumentGroup('Arg_CC')
         Unit Circle Group with Exponents in
-        Real Field with 53 bits of precision modulo ZZ
+        Real Floating-Point Field with 53 bits of precision modulo ZZ
         sage: ArgumentGroup(CIF)
         Unit Circle Group with Exponents in
         Real Interval Field with 53 bits of precision modulo ZZ
