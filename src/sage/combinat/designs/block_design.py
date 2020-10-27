@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 Block designs
 
 A *block design* is a set together with a family of subsets (repeated subsets
@@ -8,10 +8,9 @@ deemed useful for a particular application. See :wikipedia:`Block_design`.
 
 REFERENCES:
 
-.. [1] Block design from wikipedia,
-  :wikipedia:`Block_design`
+- Block design from wikipedia: :wikipedia:`Block_design`
 
-.. [2] What is a block design?,
+- What is a block design?,
   http://designtheory.org/library/extrep/extrep-1.1-html/node4.html (in 'The
   External Representation of Block Designs' by Peter J. Cameron, Peter
   Dobcsanyi, John P. Morgan, Leonard H. Soicher)
@@ -868,8 +867,9 @@ def AffineGeometryDesign(n, d, F, point_coordinates=True, check=True):
     B = BlockDesign(len(points), blocks, name="AffineGeometryDesign", check=check)
 
     if point_coordinates:
-        rd = {i:p[0][1:] for p,i in points.items()}
-        for v in rd.values(): v.set_immutable()
+        rd = {i: p[0][1:] for p, i in points.items()}
+        for v in rd.values():
+            v.set_immutable()
         B.relabel(rd)
 
     if check:
@@ -877,6 +877,7 @@ def AffineGeometryDesign(n, d, F, point_coordinates=True, check=True):
             raise RuntimeError("error in AffineGeometryDesign "
                     "construction. Please e-mail sage-devel@googlegroups.com")
     return B
+
 
 def CremonaRichmondConfiguration():
     r"""

@@ -172,6 +172,12 @@ REFERENCES:
                 Journal of Number Theory 90 (2002), pp.304--315,
                 http://www.math.arizona.edu/~wmc/Research/JacobianFinal.pdf
 
+.. [AKMRVW] \A. Alvarado, A. Koutsianas, B. Malmskog, C. Rasmussen, C. Vincent,
+            and M. West,
+            *A robust implementation for solving the S-unit equation and 
+            several applications.*
+            :arxiv:`1903.00977`
+
 .. [AJL2011] \S. Ariki, N. Jacon, and C. Lecouvey.
              *The modular branching rule for affine Hecke algebras of type A*.
              Adv. Math. 228:481-526, 2011.
@@ -1899,6 +1905,13 @@ REFERENCES:
             l'École Normale Supérieure, Sér. 4, 23, no. 3 (1990) p
             469-494
 
+.. [DNB1996] Feodor F. Dragan, Falk Nicolai, Andreas Brandstat.
+               *LexBFS-orderings and powers of graphs*.
+               International Workshop on Graph-Theoretic Concepts in Computer
+               Science, WG 1996. Lecture Notes in Computer Science, vol 1197.
+               Springer, Berlin, Heidelberg.
+               :doi:`10.1007/3-540-62559-3_15`
+
 .. [Do2009] \P. Dobcsanyi et
             al. DesignTheory.org. http://designtheory.org/database/
 
@@ -2788,15 +2801,21 @@ REFERENCES:
                 pp. 216--221.
                 :doi:`10.1016/0097-3165(76)90065-0`
 
+.. [HK2002] *Introduction to Quantum Groups and Crystal Bases.*
+            Jin Hong and Seok-Jin Kang. 2002. Volume 42.
+            Graduate Studies in Mathematics. American Mathematical Society.
+
 .. [HM1979]  M. Habib, and M.C. Maurer
           On the X-join decomposition for undirected graphs
           Discrete Applied Mathematics
           vol 1, issue 3, pages 201-207
 
-.. [HK2002] *Introduction to Quantum Groups and Crystal Bases.*
-            Jin Hong and Seok-Jin Kang. 2002. Volume 42.
-            Graduate Studies in Mathematics. American Mathematical Society.
-
+.. [HMPV2000] Michel Habib, Ross McConnell, Christophe Paul, and
+            Laurent Viennot. *Lex-BFS and partition refinement, with
+            applications to transitive orientation, interval graph
+            recognition and consecutive ones testing*.
+            Theoretical Computer Science, 234(1-2): 59-84, 2000.
+            :doi:`10.1016/S0304-3975(97)00241-7`.
 
 .. [HN2006] Florent Hivert and Janvier Nzeutchap. *Dual Graded Graphs
             in Combinatorial Hopf Algebras*.
@@ -3529,6 +3548,9 @@ REFERENCES:
              Mémoire de maîtrise en Mathématiques, Montréal, UQAM,
              2008, 109 pages.
 
+.. [Labelle2008] \G. Labelle. *New combinatorial computational methods
+                 arising from pseudo-singletons.* DMTCS Proceedings 1, 2008.
+
 .. [Lak2010] Dan Laksov. *Splitting algebras and Gysin homomorphisms*.
              Journal of Commutative Algebra, Volume 2, Number 3, Fall 2010
 
@@ -4117,6 +4139,10 @@ REFERENCES:
              :doi:`10.1137/1.9781611972986.7`
              http://www.siam.org/proceedings/analco/2008/anl08_022martinezc.pdf
 
+.. [MPPS2020] Jennifer Morse, Jianping Pan, Wencin Poh and Anne Schilling,
+             *A Crystal on Decreasing Factorizations in the 0-Hecke Monoid*
+             Electron. J. Combin., **27(2)** (2020) #P2.2948. :arxiv:`1911.08732`.
+
 .. [MR1985] \R. Mathon and A. Rosa,
             *A new strongly regular graph*,
             Journal of Combinatorial Theory, Series A 38, no. 1 (1985): 84-86.
@@ -4141,8 +4167,8 @@ REFERENCES:
              Volume 34, Issue 3, May 1983, Pages 340--359.
              http://www.sciencedirect.com/science/article/pii/0097316583900687
 
-.. [MR2016] \B. Malmskog, C. Rasmussen, "Picard curves over \mathbb{Q}
-            with good reduction away from 3". LMS Journal of Computation and
+.. [MR2016] \B. Malmskog, C. Rasmussen, *Picard curves over Q
+            with good reduction away from 3*. LMS Journal of Computation and
             Mathematics 19 (2016), no. 2, 382-408.
             :doi:`10.1112/S1461157016000413`.
 
@@ -4617,6 +4643,11 @@ REFERENCES:
 .. [Rau1979] Gerard Rauzy, *Échanges d'intervalles et transformations
              induites*, Acta Arith. 34, no. 3, 203-212, 1980
 
+.. [RCES1994] Ruskey, R. Cohen, P. Eades, A. Scott.
+              *Alley CATs in search of good homes.*
+              Congressus numerantium, 1994.
+              Pages 97--110
+
 .. [Rea2004] Nathan Reading.
              *Cambrian Lattices*.
              :arxiv:`math/0402086v2`.
@@ -4984,8 +5015,8 @@ REFERENCES:
 .. [Sor1984] \A. Sorkin, *LUCIFER: a cryptographic algorithm*;
              in Cryptologia, 8(1), pp. 22–35, 1984.
 
-.. [Sma1995] \N.P. Smart, "The Solution of Triangularly Connected
-             Decomposable Form Equations". Math. Comp. 64 (1995), 819-840.
+.. [Sma1995] \N.P. Smart, *The Solution of Triangularly Connected
+             Decomposable Form Equations*. Math. Comp. 64 (1995), 819-840.
              :doi:`10.1090/S0025-5718-1995-1277771-4`.
 
 .. [Sma1998] \N.P. Smart, *The algorithmic resolution of Diophantine equations*,
@@ -5678,6 +5709,9 @@ REFERENCES:
 .. [Yip2018] Yip, Martha. "Rook placements and Jordan forms of
              upper-triangular nilpotent matrices."
              Electronic J. Comb. 25(1) (2018) #P1.68. :arxiv:`1703.00057`.
+
+.. [Yu2007] \K. Yu, *p-adic logarithmic forms and group varieties. III.* 
+            Forum Math., 19(2):187–280, 2007.
 
 .. [Yun1976] Yun, David YY. On square-free decomposition
              algorithms. In Proceedings of the third ACM symposium on
