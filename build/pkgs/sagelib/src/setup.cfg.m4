@@ -27,5 +27,44 @@ classifiers =
 
 [options]
 install_requires =
-    # From build/pkgs/sagelib/dependencies
-    include(`build/pkgs/six/install-requires.txt')
+    esyscmd(`sage-get-system-packages install-requires \
+        six \
+        | sed "2,\$s/^/    /;"')dnl
+dnl From build/pkgs/sagelib/dependencies
+    esyscmd(`sage-get-system-packages install-requires \
+        cypari         \
+        cysignals      \
+        cython         \
+        gmpy2          \
+        jinja2         \
+        jupyter_core   \
+        numpy          \
+        pkgconfig      \
+        pplpy          \
+        | sed "2,\$s/^/    /;"')dnl
+dnl From Makefile.in: SAGERUNTIME
+    esyscmd(`sage-get-system-packages install-requires \
+        ipython        \
+        pexpect        \
+        psutil         \
+        | sed "2,\$s/^/    /;"')dnl
+dnl From Makefile.in: DOC_DEPENDENCIES
+    esyscmd(`sage-get-system-packages install-requires \
+        sphinx         \
+        networkx       \
+        scipy          \
+        sympy          \
+        matplotlib     \
+        pillow         \
+        mpmath         \
+        ipykernel      \
+        jupyter_client \
+        ipywidgets     \
+        | sed "2,\$s/^/    /;"')dnl
+dnl Other Python packages that are standard spkg, used in doctests
+    esyscmd(`sage-get-system-packages install-requires \
+        cvxopt         \
+        rpy2           \
+        | sed "2,\$s/^/    /;"')dnl
+dnl fpylll       # does not install because it does not declare its build dependencies correctly. Reported upstream: https://github.com/fplll/fpylll/issues/185
+dnl pycryptosat  # Sage distribution installs it as part of cryptominisat. According to its README on https://pypi.org/project/pycryptosat/: "The pycryptosat python package compiles while compiling CryptoMiniSat. It cannot be compiled on its own, it must be compiled at the same time as CryptoMiniSat."
