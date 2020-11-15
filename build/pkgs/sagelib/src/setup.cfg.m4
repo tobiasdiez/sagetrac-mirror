@@ -1,3 +1,4 @@
+# -*- conf-unix -*-
 [metadata]
 name = sagemath-standard
 version = file: VERSION.txt
@@ -23,3 +24,8 @@ classifiers =
     Programming Language :: Python :: 3.9
     Programming Language :: Python :: Implementation :: CPython
     Topic :: Scientific/Engineering :: Mathematics
+
+[options]
+install_requires =
+    # From build/pkgs/sagelib/dependencies
+    include(`build/pkgs/six/install-requires.txt')
