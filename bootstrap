@@ -24,6 +24,7 @@
 
 # Set SAGE_ROOT to the path to this file and then cd into it
 SAGE_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
+export SAGE_ROOT
 cd "$SAGE_ROOT"
 
 export PATH="$SAGE_ROOT/build/bin:$PATH"
@@ -94,15 +95,9 @@ SAGE_SPKG_ENABLE([$pkgname], [$pkgtype])"
                 fi
                 ;;
         esac
-        for infile in "$pkgdir"/src/*.m4; do
-            if [ -f "$infile" ]; then
-                outfile="$pkgdir/src/$(basename $infile .m4)"
-                if [ "${BOOTSTRAP_QUIET}" = "no" ]; then
-                    echo "$0: installing $outfile"
-                fi
-                m4 "$infile" > "$outfile"
-            fi
-        done
+        if [ -x "$pkgdir/bootstrap" ]; then
+            (cd $pkgdir && ./bootstrap || exit 1)
+        fi
     done
     for filename in $(find build/pkgs -type f -name spkg-configure.m4 | sort); do
         pkgname="$(echo $filename | cut -d/ -f3)"
@@ -123,8 +118,6 @@ SAGE_SPKG_CONFIGURE_$(echo ${pkgname} | tr '[a-z]' '[A-Z]')"
     # ONLY stderr, and to re-output the results back to stderr leaving
     # stdout alone. Basically we swap the two descriptors using a
     # third, filter, and then swap them back.
-    BOOTSTRAP_QUIET="${BOOTSTRAP_QUIET}" \
-    SAGE_ROOT="$SAGE_ROOT" \
     src/doc/bootstrap && \
     install_config_rpath && \
     aclocal -I m4 && \
@@ -249,6 +242,7 @@ do
          ?) usage; exit 2;;
      esac
 done
+export BOOTSTRAP_QUIET
 CONFBALL="upstream/configure-$CONFVERSION.tar.gz"
 
 if [ $DOWNLOAD$SAVE = yesyes ]; then
