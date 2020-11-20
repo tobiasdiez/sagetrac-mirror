@@ -12,6 +12,8 @@ if [ -z "$SAGE_ROOT" ]; then
 fi
 case "$SYSTEM" in
     install-requires)
+        # Collect install-requires.txt and output it in the format
+        # needed by setup.cfg [options] install_requires=
         SYSTEM_PACKAGES_FILE_NAMES="install-requires.txt"
         STRIP_COMMENTS="sed s/#.*//;/^[[:space:]]*$/d;"
         COLLECT=
