@@ -387,7 +387,8 @@ class DiffForm(TensorField):
 
         OUTPUT:
 
-        - the exterior derivative of the differential form
+        - instance of :class:`DiffForm` representing the exterior derivative
+          of the differential form
 
         EXAMPLES:
 
@@ -1315,7 +1316,8 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
 
         OUTPUT:
 
-        - the exterior derivative of the differential form
+        - instance of :class:`DiffForm` representing the exterior derivative
+          of the differential form
 
         EXAMPLES:
 

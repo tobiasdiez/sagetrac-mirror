@@ -1105,7 +1105,8 @@ class TensorFieldParal(FreeModuleTensor, TensorField):
 
         OUTPUT:
 
-        - components in the vector frame ``basis``
+        - components in the vector frame ``basis``, as an instance of the
+          class :class:`~sage.tensor.modules.comp.Components`
 
         EXAMPLES::
 

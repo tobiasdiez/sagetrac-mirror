@@ -108,8 +108,9 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
     - ``domain`` -- differentiable manifold `U` along which the
       vector fields are defined
-    - ``dest_map`` -- (default: ``None``) smooth destination map
-      `\Phi:\ U \rightarrow M`
+    - ``dest_map`` -- (default: ``None``) destination map
+      `\Phi:\ U \to M`
+      (type: :class:`~sage.manifolds.differentiable.diff_map.DiffMap`);
       if ``None``, it is assumed that `U = M` and `\Phi` is the identity
       map of `M` (case of vector fields *on* `M`)
 
@@ -401,7 +402,10 @@ class VectorFieldModule(UniqueRepresentation, Parent):
 
         OUTPUT:
 
-        - the domain of the vector fields that belong to this module
+        - instance of
+          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
+          representing the domain of the vector fields that belong to this
+          module
 
         EXAMPLES::
 
@@ -429,7 +433,8 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         OUTPUT:
 
         - the manifold in which the vector fields of this
-          module take their values
+          module take their values; as an instance of
+          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
 
         EXAMPLES::
 
@@ -1565,8 +1570,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - a differentiable manifold representing the domain of the vector fields
-          that belong to this module
+        - a
+          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
+          representing the domain of the vector fields that belong to this
+          module
 
         EXAMPLES::
 
@@ -1595,8 +1602,10 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - a differentiable manifold representing the manifold in which the 
-          vector fields of ``self`` take their values
+        - a
+          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`
+          representing the manifold in which the vector fields of ``self``
+          take their values
 
         EXAMPLES::
 
@@ -1643,7 +1652,8 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
 
         OUTPUT:
 
-        - the differentiable map `\Phi`
+        - a :class:`~sage.manifolds.differentiable.diff_map.DiffMap`
+          representing the differential map `\Phi`
 
         EXAMPLES::
 

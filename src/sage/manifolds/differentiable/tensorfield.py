@@ -123,7 +123,8 @@ class TensorField(ModuleElementWithMutability):
     INPUT:
 
     - ``vector_field_module`` -- module `\mathfrak{X}(U,\Phi)` of vector
-      fields along `U` associated with the map `\Phi: U \rightarrow M`
+      fields along `U` associated with the map `\Phi: U \to M` (cf.
+      :class:`~sage.manifolds.differentiable.vectorfield_module.VectorFieldModule`)
     - ``tensor_type`` -- pair `(k,l)` with `k` being the contravariant rank
       and `l` the covariant rank
     - ``name`` -- (default: ``None``) name given to the tensor field
@@ -844,7 +845,8 @@ class TensorField(ModuleElementWithMutability):
 
         OUTPUT:
 
-        - the underlying vector field module
+        - the underlying vector field module, as an instance of
+          :class:`~sage.manifolds.differentiable.vectorfield_module.VectorFieldModule`
 
         EXAMPLES:
 
@@ -1004,6 +1006,8 @@ class TensorField(ModuleElementWithMutability):
         if self.is_immutable():
             raise ValueError("the restrictions of an immutable element "
                              "cannot be changed")
+        if not isinstance(rst, TensorField):
+            raise TypeError("the argument must be a tensor field")
         if not rst._domain.is_subset(self._domain):
             raise ValueError("the domain of the declared restriction is not " +
                              "a subset of the field's domain")
@@ -1039,7 +1043,9 @@ class TensorField(ModuleElementWithMutability):
 
         INPUT:
 
-        - ``subdomain`` -- open subset `U` of the tensor field domain `S`
+        - ``subdomain`` --
+          :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`;
+          open subset `U` of the tensor field domain `S`
         - ``dest_map`` --
           :class:`~sage.manifolds.differentiable.diff_map.DiffMap`
           (default: ``None``); destination map `\Psi:\ U \rightarrow V`,
@@ -1396,7 +1402,8 @@ class TensorField(ModuleElementWithMutability):
 
         OUTPUT:
 
-        - components in the given frame; if such
+        - components in the given frame, as a
+          :class:`~sage.tensor.modules.comp.Components`; if such
           components did not exist previously, they are created
 
         EXAMPLES::

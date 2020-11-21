@@ -310,6 +310,8 @@ class TopologicalSubmanifold(TopologicalManifold):
             ....:                 t_inverse={t: phi_inv_t})
 
         """
+        if not isinstance(phi, ContinuousMap):
+            raise TypeError("the argument phi must be a continuous map")
         if phi.domain() is not self or phi.codomain() is not self._ambient:
             raise ValueError("{} is not a map from {} to {}".format(phi, self,
                                                                 self._ambient))

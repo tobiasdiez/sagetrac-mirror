@@ -2416,6 +2416,8 @@ class TopologicalManifold(ManifoldSubset):
             sage: id(p) == p
             True
 
+        TESTS:
+
         Identity map of a differentiable manifold::
 
             sage: M = Manifold(2, 'M', structure='differentiable')

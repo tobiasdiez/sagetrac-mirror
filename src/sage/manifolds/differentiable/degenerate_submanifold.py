@@ -603,7 +603,8 @@ class DegenerateSubmanifold(DegenerateManifold, DifferentiableSubmanifold):
 
         OUTPUT:
 
-        - induced mettric
+        - induced metric, as an instance of
+          :class:`~sage.manifolds.differentiable.metric.DegenerateMetric`
 
         EXAMPLES:
 
