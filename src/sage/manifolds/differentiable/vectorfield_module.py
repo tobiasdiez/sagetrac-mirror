@@ -47,7 +47,7 @@ from sage.rings.integer import Integer
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 from sage.manifolds.differentiable.vectorfield import (VectorField,
                                                        VectorFieldParal)
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from sage.manifolds.differentiable.manifold import DifferentiableManifold
 
@@ -1055,7 +1055,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
         zero.set_immutable()
         return zero
 
-    def metric(self, name, signature=None, latex_name=None):
+    def metric(self, name: str, signature: Optional[int] = None, latex_name: Optional[str] = None):
         r"""
         Construct a metric (symmetric bilinear
         form) on the current vector field module.

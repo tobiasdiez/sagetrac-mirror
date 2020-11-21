@@ -440,6 +440,7 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+from typing import Optional
 from sage.categories.manifolds import Manifolds
 from sage.categories.homset import Hom
 from sage.manifolds.differentiable.diff_map import DiffMap
@@ -3876,7 +3877,7 @@ class DifferentiableManifold(TopologicalManifold):
                                                                AffineConnection
         return AffineConnection(self, name, latex_name)
 
-    def metric(self, name=None, signature=None, latex_name=None, dest_map=None) -> PseudoRiemannianMetric:
+    def metric(self, name: str, signature: Optional[int] = None, latex_name: Optional[str] = None) -> PseudoRiemannianMetric:
         r"""
         Define a pseudo-Riemannian metric on the manifold.
 
