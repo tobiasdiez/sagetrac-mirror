@@ -27,4 +27,3 @@ from sage.all import *
 from sage.calculus.predefined import x
 
 sage.misc.session.init()
-
