@@ -2187,7 +2187,6 @@ class PseudoRiemannianMetricParal(PseudoRiemannianMetric, TensorFieldParal):
         # The derived quantities from the mother classes are deleted:
         TensorFieldParal._del_derived(self, del_restrictions=del_restrictions)
         PseudoRiemannianMetric._del_derived(self)
-        self._del_inverse()
 
     def _del_inverse(self):
         r"""
