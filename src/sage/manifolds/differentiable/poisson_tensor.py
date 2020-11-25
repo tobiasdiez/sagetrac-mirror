@@ -1,3 +1,4 @@
+from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
 from sage.manifolds.differentiable.diff_form import DiffForm
 from sage.manifolds.differentiable.vectorfield import VectorField
 from sage.manifolds.differentiable.scalarfield import DiffScalarField
@@ -89,6 +90,23 @@ class PoissonTensorField(TensorField):
 
         [X_f, X_g] = X_{{f,g}}
         """
-        poisson_bracket = self.contract(0, self.hamiltonian_vector_field(f)).contract(0, self.hamiltonian_vector_field(g))
+        poisson_bracket = self.contract(0, f.exterior_derivative()).contract(0, g.exterior_derivative())
         poisson_bracket.set_name(f"poisson({f._name}, {g._name})", '\\{' + f'{f._latex_name}, {g._latex_name}' + '\\}')
         return poisson_bracket
+
+
+class PoissonTensorFieldParal(PoissonTensorField, TensorFieldParal):
+    
+    def __init__(self, manifold: Union[DifferentiableManifold, VectorFieldModule], name: Optional[str] = None, latex_name: Optional[str] = None):
+        try:
+            vector_field_module = manifold.vector_field_module()
+        except AttributeError:
+            vector_field_module = manifold
+
+        if name is None:
+            name = "varpi"
+            if latex_name is None:
+                latex_name = "\\varpi"
+
+        TensorFieldParal.__init__(self, vector_field_module, (2, 0), name=name, latex_name=latex_name, antisym=(0, 1))
+

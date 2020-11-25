@@ -292,7 +292,7 @@ class SymplecticForm(DiffForm):
             # Initialize the Poisson tensor
             poisson_name = f'poisson_{self._name}'
             poisson_latex_name = f'{self._latex_name}^{{-1}}'
-            self._poisson = PoissonTensorField(self._vmodule, poisson_name, poisson_latex_name)
+            self._poisson = self._vmodule.poisson_tensor(poisson_name, poisson_latex_name)
 
         # Update the Poisson tensor
         # TODO: Should this be done instead when a new restriction is added?
@@ -805,7 +805,7 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
 
 
     @classmethod
-    def wrap(cls, form:DiffFormParal, name: Optional[str] = None, latex_name: Optional[str] = None) -> 'SymplecticFormParal':
+    def wrap(cls, form: DiffFormParal, name: Optional[str] = None, latex_name: Optional[str] = None) -> 'SymplecticFormParal':
         r"""
         Define the metric from a field of symmetric bilinear forms.
 

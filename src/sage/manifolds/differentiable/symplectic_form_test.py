@@ -10,6 +10,7 @@ from sage.manifolds.catalog import Sphere
 from sage.manifolds.differentiable.symplectic_form import SymplecticForm
 from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
 from sage.symbolic.function_factory import function
+from sage.manifolds.scalarfield import ScalarField
 
 
 class TestGenericSymplecticForm:
@@ -49,8 +50,8 @@ class TestCoherenceOfFormulas:
         elif request.param == "S2":
             # TODO: Return sphere here instead
             # Problem: we use cartesian_coordinates below
-            # return Sphere(2)
-            return SymplecticVectorSpace(4, 'R4', symplectic_name='omega')
+            return Sphere(2)
+            #return SymplecticVectorSpace(4, 'R4', symplectic_name='omega')
 
     @pytest.fixture()
     def omega(self, M):
@@ -60,21 +61,25 @@ class TestCoherenceOfFormulas:
             return SymplecticForm.wrap(M.metric().volume_form(), 'omega')
 
     def test_flat_of_hamiltonian_vector_field(self, M: DifferentiableManifold, omega: SymplecticForm):
-        q, p = M.cartesian_coordinates()[:]
-        H = M.scalar_field(function('H')(q, p), name='H')
+        H = generic_scalar_field(M, 'H')
         assert omega.flat(omega.hamiltonian_vector_field(H)) == - H.differential()
 
     def test_poisson_bracket_as_contraction_symplectic_form(self, M: DifferentiableManifold, omega: SymplecticForm):
-        q, p = M.cartesian_coordinates()[:]
-        f = M.scalar_field(function('f')(q,p), name='f')
-        g = M.scalar_field(function('g')(q,p), name='g')
+        f = generic_scalar_field(M, 'f')
+        g = generic_scalar_field(M, 'g')
         assert omega.poisson_bracket(f, g) == omega.contract(0, omega.hamiltonian_vector_field(f)).contract(0, omega.hamiltonian_vector_field(g))
 
     def test_poisson_bracket_as_contraction_poisson_tensor(self, M: DifferentiableManifold, omega: SymplecticForm):
-        q, p = M.cartesian_coordinates()[:]
-        f = M.scalar_field(function('f')(q,p), name='f')
-        g = M.scalar_field(function('g')(q,p), name='g')
+        f = generic_scalar_field(M, 'f')
+        g = generic_scalar_field(M, 'g')
         assert omega.poisson_bracket(f, g) == omega.poisson().contract(0, f.exterior_derivative()).contract(0, g.exterior_derivative())
+
+
+def generic_scalar_field(M: DifferentiableManifold, name: str) -> ScalarField:
+    chart_functions = {
+        chart: function(name)(*chart[:]) for chart in M.atlas()
+    }
+    return M.scalar_field(chart_functions, name=name)
 
 
 class TestR2VectorSpace:
@@ -91,13 +96,13 @@ class TestR2VectorSpace:
         assert str(omega.display()) == r'omega = -dq/\dp'
 
     def test_poisson(self, omega: SymplecticForm):
-        assert str(omega.poisson().display()) == r'ee = '
+        # TODO: Shouldn't this be written with wedge product?
+        assert str(omega.poisson().display()) == r'poisson_omega = -e_q*e_p + e_p*e_q'
 
     def test_hamiltonian_vector_field(self, M: SymplecticVectorSpace, omega: SymplecticForm):
-        q, p = M.cartesian_coordinates()[:]
-        H = M.scalar_field(function('H')(q, p), name='H')
+        H = generic_scalar_field(M, 'H')
         XH = omega.hamiltonian_vector_field(H)
-        assert str(XH.display()) == r'XH = '
+        assert str(XH.display()) == r'XH = d(H)/dp e_q - d(H)/dq e_p'
     
     def test_flat(self, M: SymplecticVectorSpace, omega: SymplecticForm):
         X = M.vector_field(1, 2, name='X')
