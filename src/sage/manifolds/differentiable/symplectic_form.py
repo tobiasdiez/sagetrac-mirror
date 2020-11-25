@@ -1,46 +1,30 @@
 r"""
-Pseudo-Riemannian Metrics and Degenerate Metrics
+Symplectic structures
 
-The class :class:`PseudoRiemannianMetric` implements pseudo-Riemannian metrics
+The class :class:`SymplecticForm` implements symplectic structures
 on differentiable manifolds over `\RR`. The derived class
-:class:`PseudoRiemannianMetricParal` is devoted to metrics with values on a
-parallelizable manifold.
-
-The class :class:`DegenerateMetric` implements degenerate (or null or lightlike)
-metrics on differentiable manifolds over `\RR`. The derived class
-:class:`DegenerateMetricParal` is devoted to metrics with values on a
+:class:`SymplecticFormParal` is devoted to symplectic forms on a
 parallelizable manifold.
 
 AUTHORS:
 
-- Eric Gourgoulhon, Michal Bejger (2013-2015) : initial version
-- Pablo Angulo (2016) : Schouten, Cotton and Cotton-York tensors
-- Florentin Jaffredo (2018) : series expansion for the inverse metric
-- Hans Fotsing Tetsing (2019) : degenerate metrics
+- Tobias Diez (2020) : initial version
 
 REFERENCES:
 
-- [KN1963]_
-- [Lee1997]_
-- [ONe1983]_
-- [DB1996]_
-- [DS2010]_
+- [AM1990]_
+- [RS2007]_
 
 """
 # *****************************************************************************
-#  Copyright (C) 2015 Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
-#  Copyright (C) 2015 Michal Bejger <bejger@camk.edu.pl>
-#  Copyright (C) 2016 Pablo Angulo <pang@cancamusa.net>
-#  Copyright (C) 2018 Florentin Jaffredo <florentin.jaffredo@polytechnique.edu>
-#  Copyright (C) 2019 Hans Fotsing Tetsing <hans.fotsing@aims-cameroon.org>
-#
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
 #  the License, or (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
+from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
 from six.moves import range
-from typing import overload, Optional
+from typing import Dict, Union, overload, Optional
 
 from sage.rings.integer import Integer
 from sage.manifolds.differentiable.diff_form import DiffForm, DiffFormParal
@@ -55,366 +39,80 @@ from sage.manifolds.scalarfield import ScalarField
 from sage.manifolds.differentiable.scalarfield import DiffScalarField
 from sage.manifolds.differentiable.vectorfield import VectorField
 
+
 class SymplecticForm(DiffForm):
     r"""
-    Pseudo-Riemannian metric with values on an open subset of a
-    differentiable manifold.
+    A symplectic form on a differentiable manifold.
 
-    An instance of this class is a field of nondegenerate symmetric bilinear
-    forms (metric field) along a differentiable manifold `U` with
-    values on a differentiable manifold `M` over `\RR`, via a differentiable
-    mapping `\Phi: U \rightarrow M`.
-    The standard case of a metric field *on* a manifold corresponds to `U=M`
-    and `\Phi = \mathrm{Id}_M`. Other common cases are `\Phi` being an
-    immersion and `\Phi` being a curve in `M` (`U` is then an open interval
-    of `\RR`).
+    An instance of this class is a field `\omega` of nondegenerate skew-symmetric bilinear
+    forms on a differentiable manifold `M` over `\RR`.
 
-    A *metric* `g` is a field on `U`, such that at each point `p\in U`, `g(p)`
-    is a bilinear map of the type:
+    That is, at each point `m \in M`, `\omega_m` is a bilinear map of the type:
 
     .. MATH::
 
-        g(p):\ T_q M\times T_q M  \longrightarrow \RR
+        \omega_m:\ T_m M \times T_m M  \to \RR
 
-    where `T_q M` stands for the tangent space to the
-    manifold `M` at the point `q=\Phi(p)`, such that `g(p)` is symmetric:
-    `\forall (u,v)\in  T_q M\times T_q M, \ g(p)(v,u) = g(p)(u,v)`
+    where `T_m M` stands for the tangent space to the
+    manifold `M` at the point `m`, such that `\omega_m` is skew-symmetric:
+    `\forall u,v \in T_m M, \ \omega_m(v,u) = - \omega_m(u,v)`
     and nondegenerate:
-    `(\forall v\in T_q M,\ \ g(p)(u,v) = 0) \Longrightarrow u=0`.
+    `(\forall v \in T_m M,\ \ \omega_m(u,v) = 0) \Longrightarrow u=0`.
 
     .. NOTE::
 
-        If `M` is parallelizable, the class :class:`PseudoRiemannianMetricParal`
+        If `M` is parallelizable, the class :class:`SymplecticFormParal`
         should be used instead.
-
-    INPUT:
-
-    - ``vector_field_module`` -- module `\mathfrak{X}(U,\Phi)` of vector
-      fields along `U` with values on `\Phi(U)\subset M`
-    - ``name`` -- name given to the metric
-    - ``signature`` -- (default: ``None``) signature `S` of the metric as a
-      single integer: `S = n_+ - n_-`, where `n_+` (resp. `n_-`) is the number
-      of positive terms (resp. number of negative terms) in any diagonal
-      writing of the metric components; if ``signature`` is ``None``, `S` is
-      set to the dimension of manifold `M` (Riemannian signature)
-    - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the metric;
-      if ``None``, it is formed from ``name``
-
-    EXAMPLES:
-
-    Standard metric on the sphere `S^2`::
-
-        sage: M = Manifold(2, 'S^2', start_index=1)
-
-    The two open domains covered by stereographic coordinates (North and South)::
-
-        sage: U = M.open_subset('U') ; V = M.open_subset('V')
-        sage: M.declare_union(U,V)   # S^2 is the union of U and V
-        sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coord
-        sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)),
-        ....:                 intersection_name='W', restrictions1= x^2+y^2!=0,
-        ....:                 restrictions2= u^2+v^2!=0)
-        sage: uv_to_xy = xy_to_uv.inverse()
-        sage: W = U.intersection(V) # The complement of the two poles
-        sage: eU = c_xy.frame() ; eV = c_uv.frame()
-        sage: c_xyW = c_xy.restrict(W) ; c_uvW = c_uv.restrict(W)
-        sage: eUW = c_xyW.frame() ; eVW = c_uvW.frame()
-        sage: g = M.metric('g') ; g
-        Riemannian metric g on the 2-dimensional differentiable manifold S^2
-
-    The metric is considered as a tensor field of type (0,2) on `S^2`::
-
-        sage: g.parent()
-        Module T^(0,2)(S^2) of type-(0,2) tensors fields on the 2-dimensional
-         differentiable manifold S^2
-
-    We define g by its components on domain U (factorizing them to have a nicer
-    view)::
-
-        sage: g[eU,1,1], g[eU,2,2] = 4/(1+x^2+y^2)^2, 4/(1+x^2+y^2)^2
-        sage: g.display(eU)
-        g = 4/(x^2 + y^2 + 1)^2 dx*dx + 4/(x^2 + y^2 + 1)^2 dy*dy
-
-    A matrix view of the components::
-
-        sage: g[eU,:]
-        [4/(x^2 + y^2 + 1)^2                   0]
-        [                  0 4/(x^2 + y^2 + 1)^2]
-
-    The components of g on domain V expressed in terms of (u,v) coordinates are
-    similar to those on domain U expressed in (x,y) coordinates, as we can
-    check explicitly by asking for the component transformation on the
-    common subdomain W::
-
-        sage: g.display(eVW, c_uvW)
-        g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du
-         + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
-
-    Therefore, we set::
-
-        sage: g[eV,1,1], g[eV,2,2] = 4/(1+u^2+v^2)^2, 4/(1+u^2+v^2)^2
-        sage: g[eV,1,1].factor() ; g[eV,2,2].factor()
-        4/(u^2 + v^2 + 1)^2
-        4/(u^2 + v^2 + 1)^2
-        sage: g.display(eV)
-        g = 4/(u^2 + v^2 + 1)^2 du*du + 4/(u^2 + v^2 + 1)^2 dv*dv
-
-    At this stage, the metric is fully defined on the whole sphere. Its
-    restriction to some subdomain is itself a metric (by default, it bears the
-    same symbol)::
-
-        sage: g.restrict(U)
-        Riemannian metric g on the Open subset U of the 2-dimensional
-         differentiable manifold S^2
-        sage: g.restrict(U).parent()
-        Free module T^(0,2)(U) of type-(0,2) tensors fields on the Open subset
-         U of the 2-dimensional differentiable manifold S^2
-
-    The parent of `g|_U` is a free module because is `U` is a parallelizable
-    domain, contrary to `S^2`. Actually, `g` and `g|_U` have different Python
-    type::
-
-        sage: type(g)
-        <class 'sage.manifolds.differentiable.metric.PseudoRiemannianMetric'>
-        sage: type(g.restrict(U))
-        <class 'sage.manifolds.differentiable.metric.PseudoRiemannianMetricParal'>
-
-    As a field of bilinear forms, the metric acts on pairs of tensor fields,
-    yielding a scalar field::
-
-        sage: a = M.vector_field({eU: [x, 2+y]}, name='a')
-        sage: a.add_comp_by_continuation(eV, W, chart=c_uv)
-        sage: b = M.vector_field({eU: [-y, x]}, name='b')
-        sage: b.add_comp_by_continuation(eV, W, chart=c_uv)
-        sage: s = g(a,b) ; s
-        Scalar field g(a,b) on the 2-dimensional differentiable manifold S^2
-        sage: s.display()
-        g(a,b): S^2 --> R
-        on U: (x, y) |--> 8*x/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1)
-        on V: (u, v) |--> 8*(u^3 + u*v^2)/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1)
-
-    The inverse metric is::
-
-        sage: ginv = g.inverse() ; ginv
-        Tensor field inv_g of type (2,0) on the 2-dimensional differentiable
-         manifold S^2
-        sage: ginv.parent()
-        Module T^(2,0)(S^2) of type-(2,0) tensors fields on the 2-dimensional
-         differentiable manifold S^2
-        sage: latex(ginv)
-        g^{-1}
-        sage: ginv.display(eU) # again the components are expanded
-        inv_g = (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dx*d/dx
-         + (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dy*d/dy
-        sage: ginv.display(eV)
-        inv_g = (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/du*d/du
-         + (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/dv*d/dv
-
-    We have::
-
-        sage: ginv.restrict(U) is g.restrict(U).inverse()
-        True
-        sage: ginv.restrict(V) is g.restrict(V).inverse()
-        True
-        sage: ginv.restrict(W) is g.restrict(W).inverse()
-        True
-
-    The volume form (Levi-Civita tensor) associated with `g`::
-
-        sage: eps = g.volume_form() ; eps
-        2-form eps_g on the 2-dimensional differentiable manifold S^2
-        sage: eps.display(eU)
-        eps_g = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx/\dy
-        sage: eps.display(eV)
-        eps_g = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du/\dv
-
-    The unique non-trivial component of the volume form is nothing but the
-    square root of the determinant of g in the corresponding frame::
-
-        sage: eps[[eU,1,2]] == g.sqrt_abs_det(eU)
-        True
-        sage: eps[[eV,1,2]] == g.sqrt_abs_det(eV)
-        True
-
-    The Levi-Civita connection associated with the metric `g`::
-
-        sage: nabla = g.connection() ; nabla
-        Levi-Civita connection nabla_g associated with the Riemannian metric g
-         on the 2-dimensional differentiable manifold S^2
-        sage: latex(nabla)
-        \nabla_{g}
-
-    The Christoffel symbols `\Gamma^i_{\ \, jk}` associated with some
-    coordinates::
-
-        sage: g.christoffel_symbols(c_xy)
-        3-indices components w.r.t. Coordinate frame (U, (d/dx,d/dy)), with
-         symmetry on the index positions (1, 2)
-        sage: g.christoffel_symbols(c_xy)[:]
-        [[[-2*x/(x^2 + y^2 + 1), -2*y/(x^2 + y^2 + 1)],
-          [-2*y/(x^2 + y^2 + 1), 2*x/(x^2 + y^2 + 1)]],
-         [[2*y/(x^2 + y^2 + 1), -2*x/(x^2 + y^2 + 1)],
-          [-2*x/(x^2 + y^2 + 1), -2*y/(x^2 + y^2 + 1)]]]
-        sage: g.christoffel_symbols(c_uv)[:]
-        [[[-2*u/(u^2 + v^2 + 1), -2*v/(u^2 + v^2 + 1)],
-          [-2*v/(u^2 + v^2 + 1), 2*u/(u^2 + v^2 + 1)]],
-         [[2*v/(u^2 + v^2 + 1), -2*u/(u^2 + v^2 + 1)],
-          [-2*u/(u^2 + v^2 + 1), -2*v/(u^2 + v^2 + 1)]]]
-
-    The Christoffel symbols are nothing but the connection coefficients w.r.t.
-    the coordinate frame::
-
-        sage: g.christoffel_symbols(c_xy) is nabla.coef(c_xy.frame())
-        True
-        sage: g.christoffel_symbols(c_uv) is nabla.coef(c_uv.frame())
-        True
-
-    Test that `\nabla` is the connection compatible with `g`::
-
-        sage: t = nabla(g) ; t
-        Tensor field nabla_g(g) of type (0,3) on the 2-dimensional
-         differentiable manifold S^2
-        sage: t.display(eU)
-        nabla_g(g) = 0
-        sage: t.display(eV)
-        nabla_g(g) = 0
-        sage: t == 0
-        True
-
-    The Riemann curvature tensor of `g`::
-
-        sage: riem = g.riemann() ; riem
-        Tensor field Riem(g) of type (1,3) on the 2-dimensional differentiable
-         manifold S^2
-        sage: riem.display(eU)
-        Riem(g) = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dx*dy*dx*dy
-         - 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dx*dy*dy*dx
-         - 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dy*dx*dx*dy
-         + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) d/dy*dx*dy*dx
-        sage: riem.display(eV)
-        Riem(g) = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/du*dv*du*dv
-         - 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/du*dv*dv*du
-         - 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/dv*du*du*dv
-         + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) d/dv*du*dv*du
-
-    The Ricci tensor of `g`::
-
-        sage: ric = g.ricci() ; ric
-        Field of symmetric bilinear forms Ric(g) on the 2-dimensional
-         differentiable manifold S^2
-        sage: ric.display(eU)
-        Ric(g) = 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dx*dx
-         + 4/(x^4 + y^4 + 2*(x^2 + 1)*y^2 + 2*x^2 + 1) dy*dy
-        sage: ric.display(eV)
-        Ric(g) = 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) du*du
-         + 4/(u^4 + v^4 + 2*(u^2 + 1)*v^2 + 2*u^2 + 1) dv*dv
-        sage: ric == g
-        True
-
-    The Ricci scalar of `g`::
-
-        sage: r = g.ricci_scalar() ; r
-        Scalar field r(g) on the 2-dimensional differentiable manifold S^2
-        sage: r.display()
-        r(g): S^2 --> R
-        on U: (x, y) |--> 2
-        on V: (u, v) |--> 2
-
-    In dimension 2, the Riemann tensor can be expressed entirely in terms of
-    the Ricci scalar `r`:
-
-    .. MATH::
-
-        R^i_{\ \, jlk} = \frac{r}{2} \left( \delta^i_{\ \, k} g_{jl}
-            - \delta^i_{\ \, l} g_{jk} \right)
-
-    This formula can be checked here, with the r.h.s. rewritten as
-    `-r g_{j[k} \delta^i_{\ \, l]}`::
-
-        sage: delta = M.tangent_identity_field()
-        sage: riem == - r*(g*delta).antisymmetrize(2,3)
-        True
+    
+    TESTS:
+    sage: import pytest
+    sage: pytest.main("symplectic_form_test.py")
+    TODO: add output
 
     """
-    @overload
-    def __init__(self, vector_field_module: DifferentiableManifold, name: Optional[str], latex_name: Optional[str]):
-        pass
-    @overload
-    def __init__(self, vector_field_module: VectorFieldModule, name: Optional[str], latex_name: Optional[str]):
-        pass
-    def __init__(self, vector_field_module, name: None, latex_name: None):
+
+    _name: str
+    _latex_name: str
+    _dim_half: int
+    _poisson: Optional[PoissonTensorField]
+    _vol_form: Optional[DiffForm]
+    _restrictions: Dict[DifferentiableManifold, 'SymplecticForm']
+
+    def __init__(self, manifold: Union[DifferentiableManifold, VectorFieldModule], name: Optional[str] = None, latex_name: Optional[str] = None):
         r"""
-        Construct a metric.
-
-        TESTS::
-
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V')
-            sage: M.declare_union(U,V)   # M is the union of U and V
-            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-            sage: xy_to_uv = c_xy.transition_map(c_uv, (x+y, x-y),
-            ....:               intersection_name='W', restrictions1= x>0,
-            ....:               restrictions2= u+v>0)
-            sage: uv_to_xy = xy_to_uv.inverse()
-            sage: W = U.intersection(V)
-            sage: e_xy = c_xy.frame() ; e_uv = c_uv.frame()
-            sage: XM = M.vector_field_module()
-            sage: from sage.manifolds.differentiable.metric import \
-            ....:                                        PseudoRiemannianMetric
-            sage: g = PseudoRiemannianMetric(XM, 'g', signature=0); g
-            Lorentzian metric g on the 2-dimensional differentiable
-             manifold M
-            sage: g[e_xy,0,0], g[e_xy,1,1] = -(1+x^2), 1+y^2
-            sage: g.add_comp_by_continuation(e_uv, W, c_uv)
-            sage: TestSuite(g).run(skip=['_test_category', '_test_pickling'])
-
-        .. TODO::
-
-            - fix _test_pickling (in the superclass TensorField)
-            - add a specific parent to the metrics, to fit with the category
-              framework
-
-              Defines the metric from a field of symmetric bilinear forms
+        Construct a symplectic form.
 
         INPUT:
 
-        - ``symbiform`` -- instance of
-          :class:`~sage.manifolds.differentiable.tensorfield.TensorField`
-          representing a field of symmetric bilinear forms
+        - ``manifold`` -- module `\mathfrak{X}(M)` of vector
+        fields on the manifold `M`, or the manifold `M` itself
+        - ``name`` -- (default: ``omega``) name given to the symplectic form
+        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the symplectic form;
+        if ``None``, it is formed from ``name``
 
         EXAMPLES:
 
-        Metric defined from a field of symmetric bilinear forms on a
-        non-parallelizable 2-dimensional manifold::
+        Standard symplectic form on `\RR^2`::
 
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V')
-            sage: M.declare_union(U,V)   # M is the union of U and V
-            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-            sage: xy_to_uv = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W',
-            ....:                              restrictions1= x>0, restrictions2= u+v>0)
-            sage: uv_to_xy = xy_to_uv.inverse()
-            sage: W = U.intersection(V)
-            sage: eU = c_xy.frame() ; eV = c_uv.frame()
-            sage: h = M.sym_bilin_form_field(name='h')
-            sage: h[eU,0,0], h[eU,0,1], h[eU,1,1] = 1+x, x*y, 1-y
-            sage: h.add_comp_by_continuation(eV, W, c_uv)
-            sage: h.display(eU)
-            h = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
-            sage: h.display(eV)
-            h = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv
-             + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
-            sage: g = M.metric('g')
-            sage: g.set(h)
-            sage: g.display(eU)
-            g = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
-            sage: g.display(eV)
-            g = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv
-             + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
+            sage: M.<q, p> = EuclideanSpace(2, "R2", r"\mathbb{R}^2", symbols=r"q:q p:p")
+            sage: omega = SymplecticForm(M, 'omega', r'\omega')
+            sage: omega.set_comp()[1,2] = -1
+            sage: omega.display()
+            omega = -dq/\dp
 
         """
-        if isinstance(vector_field_module, DifferentiableManifold):
-            vector_field_module = vector_field_module.vector_field_module()
+        try:
+            vector_field_module = manifold.vector_field_module()
+        except AttributeError:
+            vector_field_module = manifold
+
+        if name is None:
+            name = "omega"
+            if latex_name is None:
+                latex_name = "\\omega"
+
+        if latex_name is None:
+            latex_name = name
 
         DiffForm.__init__(self, vector_field_module, 2, name=name, latex_name=latex_name)
 
@@ -422,49 +120,20 @@ class SymplecticForm(DiffForm):
         dim = self._ambient_domain.dimension()
         if dim % 2 == 1:
             raise ValueError(f"the dimension of the manifold must be even but it is {dim}")
-                
+        self._dim_half = dim // 2
+
         # Initialization of derived quantities
         SymplecticForm._init_derived(self)
 
     def _repr_(self):
         r"""
         String representation of the object.
-
-        TESTS::
-
-            sage: M = Manifold(5, 'M')
-            sage: g = M.metric('g')
-            sage: g._repr_()
-            'Riemannian metric g on the 5-dimensional differentiable manifold M'
-            sage: g = M.metric('g', signature=3)
-            sage: g._repr_()
-            'Lorentzian metric g on the 5-dimensional differentiable manifold M'
-            sage: g = M.metric('g', signature=1)
-            sage: g._repr_()
-            'Pseudo-Riemannian metric g on the 5-dimensional differentiable manifold M'
-
         """
-        return self._final_repr("Symplectic form " + self._name + " ")
+        return self._final_repr(f"Symplectic form {self._name} ")
 
     def _new_instance(self):
         r"""
-        Create an instance of the same class as ``self`` with the same
-        signature.
-
-        TESTS::
-
-            sage: M = Manifold(5, 'M')
-            sage: g = M.metric('g', signature=3)
-            sage: g1 = g._new_instance(); g1
-            Lorentzian metric unnamed metric on the 5-dimensional
-             differentiable manifold M
-            sage: type(g1) == type(g)
-            True
-            sage: g1.parent() is g.parent()
-            True
-            sage: g1.signature() == g.signature()
-            True
-
+        Create an instance of the same class as ``self``.
         """
         return type(self)(self._vmodule, 'unnamed symplectic form',
                           latex_name=r'\mbox{unnamed symplectic form}')
@@ -472,153 +141,95 @@ class SymplecticForm(DiffForm):
     def _init_derived(self):
         r"""
         Initialize the derived quantities.
-
-        TESTS::
-
-            sage: M = Manifold(5, 'M')
-            sage: g = M.metric('g')
-            sage: g._init_derived()
-
         """
         # Initialization of quantities pertaining to the mother class
         DiffForm._init_derived(self)
 
-        # Poisson tensor: TODO skew
-        poisson_name = 'poisson_' + self._name
-        poisson_latex_name = self._latex_name + r'^{-1}'
-        self._poisson = self._vmodule.tensor((2,0), name=poisson_name,
-                                             latex_name=poisson_latex_name,
-                                             sym=(0,1))
-
-        # Volume form and associated tensors
-        self._vol_forms = [] 
+        self._poisson = None
+        self._vol_form = None
 
     def _del_derived(self):
         r"""
         Delete the derived quantities.
-
-        TESTS::
-
-            sage: M = Manifold(5, 'M')
-            sage: g = M.metric('g')
-            sage: g._del_derived()
-
         """
         # Delete the derived quantities from the mother class
         DiffForm._del_derived(self)
 
         # Clear the Poisson tensor
-        self._poisson._restrictions.clear()
-        self._poisson._del_derived()
+        if self._poisson is not None:
+            self._poisson._restrictions.clear()
+            self._poisson._del_derived()
+            self._poisson = None
 
-        # Delete the volume form and the associated tensors
-        del self._vol_forms[:]        
+        # Delete the volume form
+        if self._vol_form is not None:
+            self._vol_form._restrictions.clear()
+            self._vol_form._del_derived()
+            self._vol_form = None
 
-    # TODO
-    def restrict(self, subdomain, dest_map=None):
+    def restrict(self, subdomain: DifferentiableManifold, dest_map: Optional[DiffMap] = None) -> 'SymplecticForm':
         r"""
-        Return the restriction of the metric to some subdomain.
+        Return the restriction of the symplectic form to some subdomain.
 
         If the restriction has not been defined yet, it is constructed here.
 
         INPUT:
 
-        - ``subdomain`` -- open subset `U` of the metric's domain (must be an
-          instance of :class:`~sage.manifolds.differentiable.manifold.DifferentiableManifold`)
+        - ``subdomain`` -- open subset `U` of the symplectic form's domain
         - ``dest_map`` -- (default: ``None``) destination map
-          `\Phi:\ U \rightarrow V`, where `V` is a subdomain of
-          ``self._codomain``
-          (type: :class:`~sage.manifolds.differentiable.diff_map.DiffMap`)
-          If None, the restriction of ``self._vmodule._dest_map`` to `U` is
-          used.
+          `\Phi:\ U \to V`, where `V` is a subdomain of the symplectic form's domain
+          If None, the restriction of the initial vector field module is used.
 
         OUTPUT:
 
-        - instance of :class:`PseudoRiemannianMetric` representing the
-          restriction.
+        - the restricted symplectic form.
 
         EXAMPLES::
 
-            sage: M = Manifold(5, 'M')
-            sage: g = M.metric('g', signature=3)
+            sage: M = Manifold(6, 'M')
+            sage: omega = SymplecticForm(M)
             sage: U = M.open_subset('U')
-            sage: g.restrict(U)
-            Lorentzian metric g on the Open subset U of the
-             5-dimensional differentiable manifold M
-            sage: g.restrict(U).signature()
-            3
-
-        See the top documentation of :class:`PseudoRiemannianMetric` for more
-        examples.
-
+            sage: omega.restrict(U)
+            Symplectic form omega on the Open subset U of the
+             6-dimensional differentiable manifold M
         """
         if subdomain == self._domain:
             return self
+        
         if subdomain not in self._restrictions:
-            # Construct the restriction at the tensor field level:
-            resu = TensorField.restrict(self, subdomain, dest_map=dest_map)
-            # the type is correctly handled by TensorField.restrict, i.e.
-            # resu is of type self.__class__, but the signature is not handled
-            # by TensorField.restrict; we have to set it here:
-            resu._signature = self._signature
-            resu._signature_pm = self._signature_pm
-            resu._indic_signat = self._indic_signat
-            # Restrictions of derived quantities:
-            resu._inverse = self.inverse().restrict(subdomain)
-            for attr in self._derived_objects:
-                derived = self.__getattribute__(attr)
-                if derived is not None:
-                    resu.__setattr__(attr, derived.restrict(subdomain))
-            if self._vol_forms != []:
-                for eps in self._vol_forms:
-                    resu._vol_forms.append(eps.restrict(subdomain))
-            # NB: no initialization of resu._determinants nor
-            # resu._sqrt_abs_dets
-            # The restriction is ready:
-            self._restrictions[subdomain] = resu
-        return self._restrictions[subdomain]
+            # Construct the restriction at the tensor field level
+            restriction = DiffForm.restrict(self, subdomain, dest_map=dest_map)
+            
+            # Restrictions of derived quantities
+            if self._poisson is not None:
+                restriction._poisson = self._poisson.restrict(subdomain)
+            if self._vol_form is not None:
+                restriction._vol_form = self._vmodule.restrict(subdomain)
 
-    @classmethod
-    def wrap(cls, form:DiffForm, name: Optional[str] = None, latex_name: Optional[str] = None) -> 'SymplecticForm':
+            # The restriction is ready
+            self._restrictions[subdomain] = restriction
+            return restriction
+        else:
+            return self._restrictions[subdomain]
+
+    @staticmethod
+    def wrap(form: DiffForm, name: Optional[str] = None, latex_name: Optional[str] = None) -> 'SymplecticForm':
         r"""
-        Defines the metric from a field of symmetric bilinear forms
+        Define the symplectic form from a differential form.
 
         INPUT:
 
-        - ``form`` -- instance of
-          :class:`~sage.manifolds.differentiable.tensorfield.TensorField`
-          representing a field of symmetric bilinear forms
+        - ``form`` -- differential `2`-form
 
         EXAMPLES:
 
-        Metric defined from a field of symmetric bilinear forms on a
-        non-parallelizable 2-dimensional manifold::
+        Volume form on the sphere as a symplectic form:
 
-            sage: M = Manifold(2, 'M')
-            sage: U = M.open_subset('U') ; V = M.open_subset('V')
-            sage: M.declare_union(U,V)   # M is the union of U and V
-            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart()
-            sage: xy_to_uv = c_xy.transition_map(c_uv, (x+y, x-y), intersection_name='W',
-            ....:                              restrictions1= x>0, restrictions2= u+v>0)
-            sage: uv_to_xy = xy_to_uv.inverse()
-            sage: W = U.intersection(V)
-            sage: eU = c_xy.frame() ; eV = c_uv.frame()
-            sage: h = M.sym_bilin_form_field(name='h')
-            sage: h[eU,0,0], h[eU,0,1], h[eU,1,1] = 1+x, x*y, 1-y
-            sage: h.add_comp_by_continuation(eV, W, c_uv)
-            sage: h.display(eU)
-            h = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
-            sage: h.display(eV)
-            h = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv
-             + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
-            sage: g = M.metric('g')
-            sage: g.set(h)
-            sage: g.display(eU)
-            g = (x + 1) dx*dx + x*y dx*dy + x*y dy*dx + (-y + 1) dy*dy
-            sage: g.display(eV)
-            g = (1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2) du*du + 1/4*u du*dv
-             + 1/4*u dv*du + (-1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2) dv*dv
-
+            sage: M = Sphere(2)
+            sage: vol_form = M.metric().volume_form()
+            sage: omega = SymplecticForm.wrap(vol_form, 'omega', r'\omega')
+            sage: omega.display()
+            TODO
         """
         if form.degree() != 2:
             raise TypeError("the argument must be a form of degree 2")
@@ -631,18 +242,18 @@ class SymplecticForm(DiffForm):
         if latex_name is None:
             latex_name = form._latex_name
 
-        symplecticForm = cls(form.base_module(), name, latex_name)
+        symplectic_form = SymplecticForm(form.base_module(), name, latex_name)
 
         for dom, rst in form._restrictions.items():
             if isinstance(rst, DiffFormParal):
-                symplecticForm._restrictions[dom] = SymplecticFormParal.wrap(rst)
+                symplectic_form._restrictions[dom] = SymplecticFormParal.wrap(rst)
             else:
-                symplecticForm._restrictions[dom] = SymplecticForm.wrap(rst)
-        return symplecticForm
+                symplectic_form._restrictions[dom] = SymplecticForm.wrap(rst)
+        return symplectic_form
 
-    def poisson(self, expansion_symbol=None, order=1):
+    def poisson(self, expansion_symbol=None, order=1) -> PoissonTensorField:
         r"""
-        Return the inverse metric.
+        Return the Poisson tensor associated to the symplectic form.
 
         INPUT:
 
@@ -655,66 +266,45 @@ class SymplecticForm(DiffForm):
           in ``expansion_symbol``; currently only first order inverse is
           supported
 
-        If ``expansion_symbol`` is set, then the zeroth order metric must be
+        If ``expansion_symbol`` is set, then the zeroth order symplecic form must be
         invertible. Moreover, subsequent calls to this method will return
         a cached value, even when called with the default value (to enable
         computation of derived quantities). To reset, use :meth:`_del_derived`.
 
         OUTPUT:
 
-        - instance of
-          :class:`~sage.manifolds.differentiable.tensorfield.TensorField`
-          with ``tensor_type`` = (2,0) representing the inverse metric
+        - the Poisson tensor
 
         EXAMPLES:
 
-        Inverse of the standard metric on the 2-sphere::
+        Poisson tensor of `2`-dimensional symplectic vector space::
 
-            sage: M = Manifold(2, 'S^2', start_index=1)
-            sage: U = M.open_subset('U') ; V = M.open_subset('V')
-            sage: M.declare_union(U,V)  # S^2 is the union of U and V
-            sage: c_xy.<x,y> = U.chart() ; c_uv.<u,v> = V.chart() # stereographic coord.
-            sage: xy_to_uv = c_xy.transition_map(c_uv, (x/(x^2+y^2), y/(x^2+y^2)),
-            ....:                 intersection_name='W', restrictions1= x^2+y^2!=0,
-            ....:                 restrictions2= u^2+v^2!=0)
-            sage: uv_to_xy = xy_to_uv.inverse()
-            sage: W = U.intersection(V)  # the complement of the two poles
-            sage: eU = c_xy.frame() ; eV = c_uv.frame()
-            sage: g = M.metric('g')
-            sage: g[eU,1,1], g[eU,2,2] = 4/(1+x^2+y^2)^2, 4/(1+x^2+y^2)^2
-            sage: g.add_comp_by_continuation(eV, W, c_uv)
-            sage: ginv = g.inverse(); ginv
+            sage: M = SymplecticVectorSpace(2)
+            sage: omega = M.symplectic_form()
+            sage: poisson = omega.poisson(); poisson
             Tensor field inv_g of type (2,0) on the 2-dimensional differentiable manifold S^2
-            sage: ginv.display(eU)
+            sage: poisson.display()
             inv_g = (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dx*d/dx
              + (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dy*d/dy
-            sage: ginv.display(eV)
-            inv_g = (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/du*d/du
-             + (1/4*u^4 + 1/4*v^4 + 1/2*(u^2 + 1)*v^2 + 1/2*u^2 + 1/4) d/dv*d/dv
-
-        Let us check that ``ginv`` is indeed the inverse of ``g``::
-
-            sage: s = g.contract(ginv); s  # contraction of last index of g with first index of ginv
-            Tensor field of type (1,1) on the 2-dimensional differentiable manifold S^2
-            sage: s == M.tangent_identity_field()
-            True
-
         """
-        # Is the Poisson tensor up to date?
-        for dom, rst in self._restrictions.items():
-            self._poisson._restrictions[dom] = rst.poisson(
+
+        if self._poisson is None:
+            # Initialize the Poisson tensor
+            poisson_name = f'poisson_{self._name}'
+            poisson_latex_name = f'{self._latex_name}^{{-1}}'
+            self._poisson = PoissonTensorField(self._vmodule, poisson_name, poisson_latex_name)
+
+        # Update the Poisson tensor
+        # TODO: Should this be done instead when a new restriction is added?
+        for domain, restriction in self._restrictions.items():
+            # Forces the update of the restriction
+            self._poisson._restrictions[domain] = restriction.poisson(
                                              expansion_symbol=expansion_symbol,
-                                             order=order) # forces the update
-                                                          # of the restriction
+                                             order=order) 
         return self._poisson
 
-    def hamiltonian_vector_field(self, function: DiffScalarField) -> TensorField:
-        r"""
-        X_f \contr \omega + \dif f = 0
-        """
-        vector_field = - self.sharp(function.exterior_derivative())
-        vector_field.set_name('X' + function._name, 'X_{' + function._latex_name + '}')
-        return vector_field
+    def hamiltonian_vector_field(self, function: DiffScalarField) -> VectorField:
+        return self.poisson().hamiltonian_vector_field(function)
     
     def flat(self, vector_field: VectorField) -> DiffForm:
         r"""
@@ -735,13 +325,7 @@ class SymplecticForm(DiffForm):
         inverse to flat
         In indicies, `\alpha^i = \pi^{ij} \alpha_j` where `\pi` is the Poisson tensor associated to the symplectic form.
         """
-
-        if form.degree() != 1:
-            raise ValueError(f"the degree of the differential form must be one but it is {form.degree()}")
-
-        vector_field = form.up(self)
-        vector_field.set_name(form._name + '_sharp', form._latex_name + '^\\sharp')
-        return vector_field
+        return self.poisson().sharp(form)
     
     def poisson_bracket(self, f: DiffScalarField, g: DiffScalarField) -> DiffScalarField:
         r"""
@@ -750,342 +334,44 @@ class SymplecticForm(DiffForm):
 
         [X_f, X_g] = X_{{f,g}}
         """
-        poisson_bracket = self.contract(0, self.hamiltonian_vector_field(f)).contract(0, self.hamiltonian_vector_field(g))
-        poisson_bracket.set_name(f"poisson({f._name}, {g._name})", '\\{' + f'{f._latex_name}, {g._latex_name}' + '\\}')
-        return poisson_bracket
+        return self.poisson().poisson_bracket(f, g)
 
-    def determinant(self, frame=None):
+    def volume_form(self) -> DiffForm:
         r"""
-        Determinant of the metric components in the specified frame.
-
-        INPUT:
-
-        - ``frame`` -- (default: ``None``) vector frame with
-          respect to which the components `g_{ij}` of the metric are defined;
-          if ``None``, the default frame of the metric's domain is used. If a
-          chart is provided instead of a frame, the associated coordinate
-          frame is used
+        Liouville volume form `\omega^n` associated with the symplectic form `\omega`,
+        where `2n` is the dimension of the manifold).
+        TODO: Decide about normalization
 
         OUTPUT:
 
-        - the determinant `\det (g_{ij})`, as an instance of
-          :class:`~sage.manifolds.differentiable.scalarfield.DiffScalarField`
+        - volume form associated to the symplectic form
 
         EXAMPLES:
 
-        Metric determinant on a 2-dimensional manifold::
+        Volume form on `\RR^4`::
 
-            sage: M = Manifold(2, 'M', start_index=1)
-            sage: X.<x,y> = M.chart()
-            sage: g = M.metric('g')
-            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
-            sage: g[:]
-            [ x + 1    x*y]
-            [   x*y -y + 1]
-            sage: s = g.determinant()  # determinant in M's default frame
-            sage: s.expr()
-            -x^2*y^2 - (x + 1)*y + x + 1
-
-        A shortcut is ``det()``::
-
-            sage: g.det() == g.determinant()
-            True
-
-        The notation ``det(g)`` can be used::
-
-            sage: det(g) == g.determinant()
-            True
-
-        Determinant in a frame different from the default's one::
-
-            sage: Y.<u,v> = M.chart()
-            sage: ch_X_Y = X.transition_map(Y, [x+y, x-y])
-            sage: ch_X_Y.inverse()
-            Change of coordinates from Chart (M, (u, v)) to Chart (M, (x, y))
-            sage: g.comp(Y.frame())[:, Y]
-            [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
-            [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
-            sage: g.determinant(Y.frame()).expr()
-            -1/4*x^2*y^2 - 1/4*(x + 1)*y + 1/4*x + 1/4
-            sage: g.determinant(Y.frame()).expr(Y)
-            -1/64*u^4 - 1/64*v^4 + 1/32*(u^2 + 2)*v^2 - 1/16*u^2 + 1/4*v + 1/4
-
-        A chart can be passed instead of a frame::
-
-            sage: g.determinant(X) is g.determinant(X.frame())
-            True
-            sage: g.determinant(Y) is g.determinant(Y.frame())
-            True
-
-        The metric determinant depends on the frame::
-
-            sage: g.determinant(X.frame()) == g.determinant(Y.frame())
-            False
-
-        Using SymPy as symbolic engine::
-
-            sage: M.set_calculus_method('sympy')
-            sage: g = M.metric('g')
-            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
-            sage: s = g.determinant()  # determinant in M's default frame
-            sage: s.expr()
-            -x**2*y**2 + x - y*(x + 1) + 1
-
+            sage: M = SymplecticVectorSpace(4, 'R4')
+            sage: omega = M.symplectic_form()
+            sage: vol = omega.volume_form() ; vol
+            4-form omega^2 on the 4-dimensional differentiable manifold R4
+            sage: vol.display()
+            omega^2 = TODO: add
         """
-        from sage.matrix.constructor import matrix
-        dom = self._domain
-        if frame is None:
-            frame = dom._def_frame
-        if frame in dom._atlas:
-            # frame is actually a chart and is changed to the associated
-            # coordinate frame:
-            frame = frame._frame
-        if frame not in self._determinants:
-            # a new computation is necessary
-            resu = frame._domain.scalar_field()
-            manif = self._ambient_domain
-            gg = self.comp(frame)
-            i1 = manif.start_index()
-            for chart in gg[[i1, i1]]._express:
-                # TODO: do the computation without the 'SR' enforcement
-                gm = matrix( [[ gg[i, j, chart].expr(method='SR')
-                            for j in manif.irange()] for i in manif.irange()] )
-                detgm = chart.simplify(gm.det(), method='SR')
-                resu.add_expr(detgm, chart=chart)
-            self._determinants[frame] = resu
-        return self._determinants[frame]
+        if self._vol_form is None:
+            self._vol_form = self
+            for _ in range(1, self._dim_half):
+                self._vol_form = self._vol_form.wedge(self)
 
-    det = determinant
+            # TODO: Or use something as vol_omega as name?
+            volume_name = f'{self._name}^{self._dim_half}'
+            volume_latex_name = f'{self._latex_name}^{{{self._dim_half}}}'
+            self._vol_form.set_name(volume_name, volume_latex_name)
 
-    def sqrt_abs_det(self, frame=None):
-        r"""
-        Square root of the absolute value of the determinant of the metric
-        components in the specified frame.
-
-        INPUT:
-
-        - ``frame`` -- (default: ``None``) vector frame with
-          respect to which the components `g_{ij}` of ``self`` are defined;
-          if ``None``, the domain's default frame is used. If a chart is
-          provided, the associated coordinate frame is used
-
-        OUTPUT:
-
-        - `\sqrt{|\det (g_{ij})|}`, as an instance of
-          :class:`~sage.manifolds.differentiable.scalarfield.DiffScalarField`
-
-        EXAMPLES:
-
-        Standard metric in the Euclidean space `\RR^3` with spherical
-        coordinates::
-
-            sage: M = Manifold(3, 'M', start_index=1)
-            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
-            sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
-            sage: g = U.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
-            sage: g.display()
-            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
-            sage: g.sqrt_abs_det().expr()
-            r^2*sin(th)
-
-        Metric determinant on a 2-dimensional manifold::
-
-            sage: M = Manifold(2, 'M', start_index=1)
-            sage: X.<x,y> = M.chart()
-            sage: g = M.metric('g')
-            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
-            sage: g[:]
-            [ x + 1    x*y]
-            [   x*y -y + 1]
-            sage: s = g.sqrt_abs_det() ; s
-            Scalar field on the 2-dimensional differentiable manifold M
-            sage: s.expr()
-            sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
-
-        Determinant in a frame different from the default's one::
-
-            sage: Y.<u,v> = M.chart()
-            sage: ch_X_Y = X.transition_map(Y, [x+y, x-y])
-            sage: ch_X_Y.inverse()
-            Change of coordinates from Chart (M, (u, v)) to Chart (M, (x, y))
-            sage: g[Y.frame(),:,Y]
-            [ 1/8*u^2 - 1/8*v^2 + 1/4*v + 1/2                            1/4*u]
-            [                           1/4*u -1/8*u^2 + 1/8*v^2 + 1/4*v + 1/2]
-            sage: g.sqrt_abs_det(Y.frame()).expr()
-            1/2*sqrt(-x^2*y^2 - (x + 1)*y + x + 1)
-            sage: g.sqrt_abs_det(Y.frame()).expr(Y)
-            1/8*sqrt(-u^4 - v^4 + 2*(u^2 + 2)*v^2 - 4*u^2 + 16*v + 16)
-
-        A chart can be passed instead of a frame::
-
-            sage: g.sqrt_abs_det(Y) is g.sqrt_abs_det(Y.frame())
-            True
-
-        The metric determinant depends on the frame::
-
-            sage: g.sqrt_abs_det(X.frame()) == g.sqrt_abs_det(Y.frame())
-            False
-
-        Using SymPy as symbolic engine::
-
-            sage: M.set_calculus_method('sympy')
-            sage: g = M.metric('g')
-            sage: g[1,1], g[1, 2], g[2, 2] = 1+x, x*y , 1-y
-            sage: g.sqrt_abs_det().expr()
-            sqrt(-x**2*y**2 - x*y + x - y + 1)
-            sage: g.sqrt_abs_det(Y.frame()).expr()
-            sqrt(-x**2*y**2 - x*y + x - y + 1)/2
-            sage: g.sqrt_abs_det(Y.frame()).expr(Y)
-            sqrt(-u**4 + 2*u**2*v**2 - 4*u**2 - v**4 + 4*v**2 + 16*v + 16)/8
-
-        """
-        dom = self._domain
-        if frame is None:
-            frame = dom._def_frame
-        if frame in dom._atlas:
-            # frame is actually a chart and is changed to the associated
-            # coordinate frame:
-            frame = frame._frame
-        if frame not in self._sqrt_abs_dets:
-            # a new computation is necessary
-            detg = self.determinant(frame)
-            resu = frame._domain.scalar_field()
-            for chart, funct in detg._express.items():
-                x = (self._indic_signat * funct).sqrt().expr()
-                resu.add_expr(x, chart=chart)
-            self._sqrt_abs_dets[frame] = resu
-        return self._sqrt_abs_dets[frame]
-
-    def volume_form(self, contra=0):
-        r"""
-        Volume form (Levi-Civita tensor) `\epsilon` associated with the metric.
-
-        This assumes that the manifold is orientable.
-
-        The volume form `\epsilon` is a `n`-form (`n` being the manifold's
-        dimension) such that for any vector basis `(e_i)` that is orthonormal
-        with respect to the metric,
-
-        .. MATH::
-
-            \epsilon(e_1,\ldots,e_n) = \pm 1
-
-        There are only two such `n`-forms, which are opposite of each other.
-        The volume form `\epsilon` is selected such that the domain's default
-        frame is right-handed with respect to it.
-
-        INPUT:
-
-        - ``contra`` -- (default: 0) number of contravariant indices of the
-          returned tensor
-
-        OUTPUT:
-
-        - if ``contra = 0`` (default value): the volume `n`-form `\epsilon`, as
-          an instance of
-          :class:`~sage.manifolds.differentiable.diff_form.DiffForm`
-        - if ``contra = k``, with `1\leq k \leq n`, the tensor field of type
-          (k,n-k) formed from `\epsilon` by raising the first k indices with
-          the metric (see method
-          :meth:`~sage.manifolds.differentiable.tensorfield.TensorField.up`);
-          the output is then an instance of
-          :class:`~sage.manifolds.differentiable.tensorfield.TensorField`, with
-          the appropriate antisymmetries, or of the subclass
-          :class:`~sage.manifolds.differentiable.multivectorfield.MultivectorField`
-          if `k=n`
-
-        EXAMPLES:
-
-        Volume form on `\RR^3` with spherical coordinates::
-
-            sage: M = Manifold(3, 'M', start_index=1)
-            sage: U = M.open_subset('U') # the complement of the half-plane (y=0, x>=0)
-            sage: c_spher.<r,th,ph> = U.chart(r'r:(0,+oo) th:(0,pi):\theta ph:(0,2*pi):\phi')
-            sage: g = U.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, r^2, (r*sin(th))^2
-            sage: g.display()
-            g = dr*dr + r^2 dth*dth + r^2*sin(th)^2 dph*dph
-            sage: eps = g.volume_form() ; eps
-            3-form eps_g on the Open subset U of the 3-dimensional
-             differentiable manifold M
-            sage: eps.display()
-            eps_g = r^2*sin(th) dr/\dth/\dph
-            sage: eps[[1,2,3]] == g.sqrt_abs_det()
-            True
-            sage: latex(eps)
-            \epsilon_{g}
-
-        The tensor field of components `\epsilon^i_{\ \, jk}` (``contra=1``)::
-
-            sage: eps1 = g.volume_form(1) ; eps1
-            Tensor field of type (1,2) on the Open subset U of the
-             3-dimensional differentiable manifold M
-            sage: eps1.symmetries()
-            no symmetry;  antisymmetry: (1, 2)
-            sage: eps1[:]
-            [[[0, 0, 0], [0, 0, r^2*sin(th)], [0, -r^2*sin(th), 0]],
-             [[0, 0, -sin(th)], [0, 0, 0], [sin(th), 0, 0]],
-             [[0, 1/sin(th), 0], [-1/sin(th), 0, 0], [0, 0, 0]]]
-
-        The tensor field of components `\epsilon^{ij}_{\ \ k}` (``contra=2``)::
-
-            sage: eps2 = g.volume_form(2) ; eps2
-            Tensor field of type (2,1) on the Open subset U of the
-             3-dimensional differentiable manifold M
-            sage: eps2.symmetries()
-            no symmetry;  antisymmetry: (0, 1)
-            sage: eps2[:]
-            [[[0, 0, 0], [0, 0, sin(th)], [0, -1/sin(th), 0]],
-             [[0, 0, -sin(th)], [0, 0, 0], [1/(r^2*sin(th)), 0, 0]],
-             [[0, 1/sin(th), 0], [-1/(r^2*sin(th)), 0, 0], [0, 0, 0]]]
-
-        The tensor field of components `\epsilon^{ijk}` (``contra=3``)::
-
-            sage: eps3 = g.volume_form(3) ; eps3
-            3-vector field on the Open subset U of the 3-dimensional
-             differentiable manifold M
-            sage: eps3.tensor_type()
-            (3, 0)
-            sage: eps3.symmetries()
-            no symmetry;  antisymmetry: (0, 1, 2)
-            sage: eps3[:]
-            [[[0, 0, 0], [0, 0, 1/(r^2*sin(th))], [0, -1/(r^2*sin(th)), 0]],
-             [[0, 0, -1/(r^2*sin(th))], [0, 0, 0], [1/(r^2*sin(th)), 0, 0]],
-             [[0, 1/(r^2*sin(th)), 0], [-1/(r^2*sin(th)), 0, 0], [0, 0, 0]]]
-            sage: eps3[1,2,3]
-            1/(r^2*sin(th))
-            sage: eps3[[1,2,3]] * g.sqrt_abs_det() == 1
-            True
-
-        """
-        if self._vol_forms == []:
-            # a new computation is necessary
-            manif = self._ambient_domain
-            dom = self._domain
-            ndim = manif.dimension()
-            # The result is constructed on the vector field module,
-            # so that dest_map is taken automatically into account:
-            eps = self._vmodule.alternating_form(ndim, name='eps_'+self._name,
-                                latex_name=r'\epsilon_{'+self._latex_name+r'}')
-            si = manif.start_index()
-            ind = tuple(range(si, si+ndim))
-            for frame in dom._top_frames:
-                if frame.destination_map() is frame.domain().identity_map():
-                    eps.add_comp(frame)[[ind]] = self.sqrt_abs_det(frame)
-            self._vol_forms.append(eps)  # Levi-Civita tensor constructed
-            # Tensors related to the Levi-Civita one by index rising:
-            for k in range(1, ndim+1):
-                epskm1 = self._vol_forms[k-1]
-                epsk = epskm1.up(self, k-1)
-                if k > 1:
-                    # restoring the antisymmetry after the up operation:
-                    epsk = epsk.antisymmetrize(*range(k))
-                self._vol_forms.append(epsk)
-        return self._vol_forms[contra]
+        return self._vol_form
 
     def hodge_star(self, pform):
         r"""
+        TODO: Add symplectic hodge star
         Compute the Hodge dual of a differential form with respect to the
         metric.
 
@@ -1248,7 +534,7 @@ class SymplecticForm(DiffForm):
 
         """
         from sage.functions.other import factorial
-        from ...tensor.modules.format_utilities import format_unop_txt, format_unop_latex
+        from sage.tensor.modules.format_utilities import format_unop_txt, format_unop_latex
         p = pform.tensor_type()[1]
         eps = self.volume_form(p)
         if p == 0:
@@ -1263,8 +549,6 @@ class SymplecticForm(DiffForm):
                     latex_name=format_unop_latex(r'\star ', pform._latex_name))
         return resu
 
-
-#******************************************************************************
 
 class SymplecticFormParal(SymplecticForm, DiffFormParal):
     r"""
@@ -1389,7 +673,7 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
     """
     _poisson: TensorFieldParal
 
-    def __init__(self, vector_field_module: VectorFieldModule, name:Optional[str], latex_name: Optional[str]=None):
+    def __init__(self, manifold: Union[VectorFieldModule, DifferentiableManifold], name: Optional[str], latex_name: Optional[str] = None):
         r"""
         Construct a metric on a parallelizable manifold.
 
@@ -1411,6 +695,14 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
               framework
 
         """
+        try:
+            vector_field_module = manifold.vector_field_module()
+        except AttributeError:
+            vector_field_module = manifold
+
+        if name is None:
+            name = "omega"
+
         DiffFormParal.__init__(self, vector_field_module, 2, name=name, latex_name=latex_name)
         
         # Check that manifold is even dimensional
@@ -1437,7 +729,7 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
         DiffFormParal._init_derived(self)
         SymplecticForm._init_derived(self)
 
-    def _del_derived(self, del_restrictions:bool = True):
+    def _del_derived(self, del_restrictions: bool = True):
         r"""
         Delete the derived quantities.
 
@@ -1457,11 +749,13 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
         """
         # Delete derived quantities from mother classes
         DiffFormParal._del_derived(self, del_restrictions=del_restrictions)
-        SymplecticForm._del_derived(self)
 
         # Clear the Poisson tensor
-        self._poisson._components.clear()
-        self._poisson._del_derived()
+        if self._poisson is not None:
+            self._poisson._components.clear()
+            self._poisson._del_derived()
+
+        SymplecticForm._del_derived(self)
 
     def restrict(self, subdomain: DifferentiableManifold, dest_map: Optional[DiffMap] = None) -> 'SymplecticFormParal':
         r"""
@@ -1648,6 +942,8 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
             [ 0  0 -e  1]
 
         """
+        super().poisson()
+
         if expansion_symbol is not None:
             if (self._poisson is not None and bool(self._poisson._components)
                 and list(self._poisson._components.values())[0][0,0]._expansion_symbol

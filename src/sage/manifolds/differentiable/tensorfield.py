@@ -59,6 +59,8 @@ from sage.structure.element import ModuleElementWithMutability
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 
+from typing import Optional, TYPE_CHECKING, Tuple, Union
+
 if TYPE_CHECKING:
     from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
     from sage.manifolds.differentiable.manifold import DifferentiableManifold
@@ -66,6 +68,8 @@ if TYPE_CHECKING:
     from sage.tensor.modules.comp import Components
     from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
     from sage.manifolds.differentiable.symplectic_form import SymplecticForm
+    from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
+
 
 TensorType = Tuple[int, int]
 class TensorField(ModuleElementWithMutability):
@@ -3715,10 +3719,10 @@ class TensorField(ModuleElementWithMutability):
             if point in dom:
                 return rst.at(point)
 
-    def up(self, non_degenerate_form:Union['PseudoRiemannianMetric', 'SymplecticForm'], pos: Optional[int] = None) -> 'TensorField':
+    def up(self, non_degenerate_form: Union['PseudoRiemannianMetric', 'SymplecticForm', 'PoissonTensorField'], pos: Optional[int] = None) -> 'TensorField':
         r"""
         Compute a dual of the tensor field by raising some index with the
-        given non-degenerate form (pseudo-riemaninan metric or symplectic form).
+        given tensor field (usually, a pseudo-riemaninan metric, a symplectic form or a Poisson tensor).
 
         If `T` is the tensor field, `(k,l)` its type and `p` the position of a
         covariant index (i.e. `k\leq p < k+l`), this method called with
@@ -3738,7 +3742,7 @@ class TensorField(ModuleElementWithMutability):
 
         INPUT:
 
-        - ``non_degenerate_form`` -- non-degenerate form `g`
+        - ``non_degenerate_form`` -- non-degenerate form `g`, or a Poisson tensor
         - ``pos`` -- (default: ``None``) position of the index (with the
           convention ``pos=0`` for the first index); if ``None``, the raising
           is performed over all the covariant indices, starting from the first
@@ -3861,14 +3865,17 @@ class TensorField(ModuleElementWithMutability):
 
         from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
         from sage.manifolds.differentiable.symplectic_form import SymplecticForm
+        from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
         if isinstance(non_degenerate_form, PseudoRiemannianMetric):
             return self.contract(pos, non_degenerate_form.inverse(), 1)
         elif isinstance(non_degenerate_form, SymplecticForm):
             return self.contract(pos, non_degenerate_form.poisson(), 1)
+        elif isinstance(non_degenerate_form, PoissonTensorField):
+            return self.contract(pos, non_degenerate_form, 1)
         else:
-            raise ValueError("The non-degenerate form has to be a metric or a symplectic form")
+            raise ValueError("The non-degenerate form has to be a metric, a symplectic form or a Poisson tensor field")
 
-    def down(self, non_degenerate_form:Union['PseudoRiemannianMetric', 'SymplecticForm'], pos: Optional[int] = None) -> 'TensorField':
+    def down(self, non_degenerate_form: Union['PseudoRiemannianMetric', 'SymplecticForm'], pos: Optional[int] = None) -> 'TensorField':
         r"""
         Compute a dual of the tensor field by lowering some index with a
         given non-degenerate form (pseudo-riemaninan metric or symplectic form).
