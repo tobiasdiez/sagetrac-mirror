@@ -10,7 +10,7 @@ from sage.manifolds.catalog import Sphere
 from sage.manifolds.differentiable.symplectic_form import SymplecticForm
 from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
 from sage.symbolic.function_factory import function
-from sage.manifolds.scalarfield import ScalarField
+from sage.manifolds.differentiable.scalarfield import DiffScalarField
 
 
 class TestGenericSymplecticForm:
@@ -64,18 +64,39 @@ class TestCoherenceOfFormulas:
         H = generic_scalar_field(M, 'H')
         assert omega.flat(omega.hamiltonian_vector_field(H)) == - H.differential()
 
+    def test_hamiltonian_vector_field_contr_symplectic_form(self, M: DifferentiableManifold, omega: SymplecticForm):
+        H = generic_scalar_field(M, 'H')
+        # X_H \contr \omega + \dif H = 0
+        assert omega.contract(0, omega.hamiltonian_vector_field(H)) == - H.differential()
+
     def test_poisson_bracket_as_contraction_symplectic_form(self, M: DifferentiableManifold, omega: SymplecticForm):
         f = generic_scalar_field(M, 'f')
         g = generic_scalar_field(M, 'g')
+        # {f, g} = \omega(X_f, X_g)
         assert omega.poisson_bracket(f, g) == omega.contract(0, omega.hamiltonian_vector_field(f)).contract(0, omega.hamiltonian_vector_field(g))
 
     def test_poisson_bracket_as_contraction_poisson_tensor(self, M: DifferentiableManifold, omega: SymplecticForm):
         f = generic_scalar_field(M, 'f')
         g = generic_scalar_field(M, 'g')
+        # {f, g} = \pi(\dif f, \dif g)
         assert omega.poisson_bracket(f, g) == omega.poisson().contract(0, f.exterior_derivative()).contract(0, g.exterior_derivative())
 
+    def test_poisson_bracket_as_contraction_hamiltonian_vector_field(self, M: DifferentiableManifold, omega: SymplecticForm):
+        f = generic_scalar_field(M, 'f')
+        g = generic_scalar_field(M, 'g')
+        # {f, g} =  X_f (g)
+        assert omega.poisson_bracket(f, g) == omega.hamiltonian_vector_field(f)(g)
+        # {f, g} =  -X_g(f)
+        assert omega.poisson_bracket(f, g) == - omega.hamiltonian_vector_field(g)(f)
 
-def generic_scalar_field(M: DifferentiableManifold, name: str) -> ScalarField:
+    def test_poisson_bracket_as_commutator_hamiltonian_vector_fields(self, M: DifferentiableManifold, omega: SymplecticForm):
+        f = generic_scalar_field(M, 'f')
+        g = generic_scalar_field(M, 'g')
+        # [X_f, X_g] = X_{{f,g}}
+        assert omega.hamiltonian_vector_field(f).bracket(omega.hamiltonian_vector_field(g)) == omega.hamiltonian_vector_field(omega.poisson_bracket(f, g))
+
+
+def generic_scalar_field(M: DifferentiableManifold, name: str) -> DiffScalarField:
     chart_functions = {
         chart: function(name)(*chart[:]) for chart in M.atlas()
     }
