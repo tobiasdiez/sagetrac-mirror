@@ -229,7 +229,7 @@ class SymplecticForm(DiffForm):
         """
         if form.degree() != 2:
             raise TypeError("the argument must be a form of degree 2")
-        
+
         if name is None:
             name = form._name
         if latex_name is None:
@@ -239,7 +239,7 @@ class SymplecticForm(DiffForm):
 
         for dom, rst in form._restrictions.items():
             symplectic_form._restrictions[dom] = SymplecticForm.wrap(rst)
-        
+
         if isinstance(form, DiffFormParal):
             for frame in form._components:
                 symplectic_form._components[frame] = form._components[frame].copy()
