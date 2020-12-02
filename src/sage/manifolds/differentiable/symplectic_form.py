@@ -28,18 +28,16 @@ TESTS:
 # *****************************************************************************
 from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
 from six.moves import range
-from typing import Dict, Union, overload, Optional
+from typing import Dict, Union, Optional
+from __future__ import annotations
 
-from sage.rings.integer import Integer
+from sage.symbolic.expression import Expression
 from sage.manifolds.differentiable.diff_form import DiffForm, DiffFormParal
 from sage.manifolds.differentiable.diff_map import DiffMap
 from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
 
-from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
-from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
 from sage.manifolds.differentiable.manifold import DifferentiableManifold
-from sage.manifolds.scalarfield import ScalarField
 from sage.manifolds.differentiable.scalarfield import DiffScalarField
 from sage.manifolds.differentiable.vectorfield import VectorField
 
@@ -193,16 +191,16 @@ class SymplecticForm(DiffForm):
         """
         if subdomain == self._domain:
             return self
-        
+
         if subdomain not in self._restrictions:
             # Construct the restriction at the tensor field level
             restriction = DiffForm.restrict(self, subdomain, dest_map=dest_map)
-            
+
             # Restrictions of derived quantities
             if self._poisson is not None:
                 restriction._poisson = self._poisson.restrict(subdomain)
             if self._vol_form is not None:
-                restriction._vol_form = self._vmodule.restrict(subdomain)
+                restriction._vol_form = self._vol_form.restrict(subdomain)
 
             # The restriction is ready
             self._restrictions[subdomain] = restriction
@@ -211,7 +209,7 @@ class SymplecticForm(DiffForm):
             return self._restrictions[subdomain]
 
     @staticmethod
-    def wrap(form: DiffForm, name: Optional[str] = None, latex_name: Optional[str] = None) -> 'SymplecticForm':
+    def wrap(form: DiffForm, name: Optional[str] = None, latex_name: Optional[str] = None) -> SymplecticForm:
         r"""
         Define the symplectic form from a differential form.
 
@@ -232,24 +230,23 @@ class SymplecticForm(DiffForm):
         if form.degree() != 2:
             raise TypeError("the argument must be a form of degree 2")
         
-        if isinstance(form, DiffFormParal):
-            return SymplecticFormParal.wrap(form, name, latex_name)
-
         if name is None:
             name = form._name
         if latex_name is None:
             latex_name = form._latex_name
 
-        symplectic_form = SymplecticForm(form.base_module(), name, latex_name)
+        symplectic_form = form.base_module().symplectic_form(name, latex_name)
 
         for dom, rst in form._restrictions.items():
-            if isinstance(rst, DiffFormParal):
-                symplectic_form._restrictions[dom] = SymplecticFormParal.wrap(rst)
-            else:
-                symplectic_form._restrictions[dom] = SymplecticForm.wrap(rst)
+            symplectic_form._restrictions[dom] = SymplecticForm.wrap(rst)
+        
+        if isinstance(form, DiffFormParal):
+            for frame in form._components:
+                symplectic_form._components[frame] = form._components[frame].copy()
+
         return symplectic_form
 
-    def poisson(self, expansion_symbol=None, order=1) -> PoissonTensorField:
+    def poisson(self, expansion_symbol: Optional[Expression] = None, order: int = 1) -> PoissonTensorField:
         r"""
         Return the Poisson tensor associated to the symplectic form.
 
@@ -298,7 +295,7 @@ class SymplecticForm(DiffForm):
             # Forces the update of the restriction
             self._poisson._restrictions[domain] = restriction.poisson(
                                              expansion_symbol=expansion_symbol,
-                                             order=order) 
+                                             order=order)
         return self._poisson
 
     def hamiltonian_vector_field(self, function: DiffScalarField) -> VectorField:
@@ -388,9 +385,10 @@ class SymplecticForm(DiffForm):
             omega^2 = TODO: add
         """
         if self._vol_form is None:
-            self._vol_form = self
+            vol_form = self
             for _ in range(1, self._dim_half):
-                self._vol_form = self._vol_form.wedge(self)
+                vol_form = vol_form.wedge(self)
+            self._vol_form = vol_form
 
             # TODO: Or use something as vol_omega as name?
             volume_name = f'{self._name}^{self._dim_half}'
@@ -399,7 +397,7 @@ class SymplecticForm(DiffForm):
 
         return self._vol_form
 
-    def hodge_star(self, pform):
+    def hodge_star(self, pform: DiffForm) -> DiffForm:
         r"""
         TODO: Add symplectic hodge star
         Compute the Hodge dual of a differential form with respect to the
@@ -833,46 +831,7 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
             self._restrictions[subdomain] = SymplecticFormParal.wrap(resu)
         return self._restrictions[subdomain]
 
-
-    @classmethod
-    def wrap(cls, form: DiffFormParal, name: Optional[str] = None, latex_name: Optional[str] = None) -> 'SymplecticFormParal':
-        r"""
-        Define the metric from a field of symmetric bilinear forms.
-
-        INPUT:
-
-        - ``symbiform`` -- instance of
-          :class:`~sage.manifolds.differentiable.tensorfield_paral.TensorFieldParal`
-          representing a field of symmetric bilinear forms
-
-        EXAMPLES::
-
-            sage: M = Manifold(2, 'M')
-            sage: X.<x,y> = M.chart()
-            sage: s = M.sym_bilin_form_field(name='s')
-            sage: s[0,0], s[0,1], s[1,1] = 1+x^2, x*y, 1+y^2
-            sage: g = M.metric('g')
-            sage: g.set(s)
-            sage: g.display()
-            g = (x^2 + 1) dx*dx + x*y dx*dy + x*y dy*dx + (y^2 + 1) dy*dy
-
-        """
-        if form.degree() != 2:
-            raise TypeError("the argument must be a form of degree 2")
-    
-        if name is None:
-            name = form._name
-        if latex_name is None:
-            latex_name = form._latex_name
-
-        symplectic_form = cls(form.base_module(), name, latex_name)
-        for frame in form._components:
-            symplectic_form._components[frame] = form._components[frame].copy()
-        for dom, form_rst in form._restrictions.items():
-            symplectic_form._restrictions[dom] = SymplecticFormParal.wrap(form_rst)
-        return symplectic_form
-
-    def poisson(self, expansion_symbol=None, order=1) -> TensorFieldParal:
+    def poisson(self, expansion_symbol: Optional[Expression] = None, order: int = 1) -> TensorFieldParal:
         r"""
         Return the inverse metric.
 
@@ -976,9 +935,8 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
 
         if expansion_symbol is not None:
             if (self._poisson is not None and bool(self._poisson._components)
-                and list(self._poisson._components.values())[0][0,0]._expansion_symbol
-                    == expansion_symbol
-                and list(self._poisson._components.values())[0][0,0]._order == order):
+                and list(self._poisson._components.values())[0][0, 0]._expansion_symbol == expansion_symbol
+                    and list(self._poisson._components.values())[0][0, 0]._order == order):
                 return self._poisson
 
             if order != 1:
@@ -1003,13 +961,13 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
             if frame not in self._poisson._components:
                 # the computation is necessary
                 fmodule = self._fmodule
-                si = fmodule._sindex ; nsi = fmodule._rank + si
+                si = fmodule._sindex
+                nsi = fmodule.rank() + si
                 dom = self._domain
                 comp_poisson = CompFullyAntiSym(fmodule._ring, frame, 2, start_index=si,
                                     output_formatter=fmodule._output_formatter)
-                comp_poisson_scal = {}  # dict. of scalars representing the components
-                                # of the poisson tensor (keys: comp. indices)
-                for i in range(si, nsi):
+                comp_poisson_scal = {}  # dict. of scalars representing the components of the poisson tensor (keys: comp. indices)
+                for i in fmodule.irange():
                     for j in range(i, nsi):   # symmetry taken into account
                         comp_poisson_scal[(i,j)] = dom.scalar_field()
                 for chart in dom.top_charts():
@@ -1017,18 +975,18 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
                     try:
                         self_matrix = matrix(
                                   [[self.comp(frame)[i, j, chart].expr(method='SR')
-                                  for j in range(si, nsi)] for i in range(si, nsi)])
+                                  for j in fmodule.irange()] for i in fmodule.irange()])
                         self_matrix_inv = self_matrix.inverse()
                     except (KeyError, ValueError):
                         continue
-                    for i in range(si, nsi):
+                    for i in fmodule.irange():
                         for j in range(i, nsi):
-                            val = chart.simplify(- self_matrix_inv[i-si,j-si], method='SR')
-                            comp_poisson_scal[(i,j)].add_expr(val, chart=chart)
+                            val = chart.simplify(- self_matrix_inv[i-si, j-si], method='SR')
+                            comp_poisson_scal[(i, j)].add_expr(val, chart=chart)
                 for i in range(si, nsi):
                     for j in range(i, nsi):
-                        comp_poisson[i,j] = comp_poisson_scal[(i,j)]
+                        comp_poisson[i, j] = comp_poisson_scal[(i, j)]
                 self._poisson._components[frame] = comp_poisson
         return self._poisson
 
-#****************************************************************************************
+# ****************************************************************************************
