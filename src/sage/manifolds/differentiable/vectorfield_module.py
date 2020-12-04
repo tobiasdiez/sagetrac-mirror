@@ -2286,17 +2286,3 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         return PseudoRiemannianMetricParal(self, name,
                                            signature=signature[0]-signature[1],
                                            latex_name=latex_name)
-
-    def symplectic_form(self, name: Optional[str] = None, latex_name: Optional[str] = None):
-        r"""
-        Construct a symplectic form on the current vector field module.
-        """
-        from sage.manifolds.differentiable.symplectic_form import SymplecticFormParal
-        return SymplecticFormParal(self, name, latex_name)
-
-    def poisson_tensor(self, name: Optional[str] = None, latex_name: Optional[str] = None):
-        r"""
-        Construct a Poisson tensor on the current vector field module.
-        """
-        from sage.manifolds.differentiable.poisson_tensor import PoissonTensorFieldParal
-        return PoissonTensorFieldParal(self, name, latex_name)
