@@ -440,6 +440,7 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+from __future__ import annotations
 from sage.categories.manifolds import Manifolds
 from sage.categories.homset import Hom
 from sage.rings.all import CC
@@ -448,6 +449,10 @@ from sage.rings.infinity import infinity, minus_infinity
 from sage.rings.integer import Integer
 from sage.manifolds.manifold import TopologicalManifold
 from sage.manifolds.differentiable.mixed_form_algebra import MixedFormAlgebra
+
+from typing import Optional, Union, TYPE_CHECKING
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.vectorfield_module import VectorFieldFreeModule, VectorFieldModule
 
 ###############################################################################
 
@@ -1201,7 +1206,7 @@ class DifferentiableManifold(TopologicalManifold):
                                                            l, dest_map=dest_map)
         return self._tensor_bundles[dest_map][(k, l)]
 
-    def vector_field_module(self, dest_map=None, force_free=False):
+    def vector_field_module(self, dest_map: Optional[DiffMap] = None, force_free: bool = False) -> Union[VectorFieldModule, VectorFieldFreeModule]:
         r"""
         Return the set of vector fields defined on ``self``, possibly
         with values in another differentiable manifold, as a module over the

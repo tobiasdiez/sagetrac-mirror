@@ -38,6 +38,9 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from __future__ import annotations
+from typing import Optional
+from sage.manifolds.differentiable.manifold import DifferentiableManifold
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.categories.modules import Modules
@@ -46,6 +49,7 @@ from sage.rings.integer import Integer
 from sage.tensor.modules.finite_rank_free_module import FiniteRankFreeModule
 from sage.manifolds.differentiable.vectorfield import (VectorField,
                                                        VectorFieldParal)
+
 
 class VectorFieldModule(UniqueRepresentation, Parent):
     r"""
@@ -181,7 +185,7 @@ class VectorFieldModule(UniqueRepresentation, Parent):
     """
     Element = VectorField
 
-    def __init__(self, domain, dest_map=None):
+    def __init__(self, domain: DifferentiableManifold, dest_map=None):
         r"""
         Construct the module of vector fields taking values on a (a priori)
         non-parallelizable differentiable manifold.
@@ -2282,3 +2286,17 @@ class VectorFieldFreeModule(FiniteRankFreeModule):
         return PseudoRiemannianMetricParal(self, name,
                                            signature=signature[0]-signature[1],
                                            latex_name=latex_name)
+
+    def symplectic_form(self, name: Optional[str] = None, latex_name: Optional[str] = None):
+        r"""
+        Construct a symplectic form on the current vector field module.
+        """
+        from sage.manifolds.differentiable.symplectic_form import SymplecticFormParal
+        return SymplecticFormParal(self, name, latex_name)
+
+    def poisson_tensor(self, name: Optional[str] = None, latex_name: Optional[str] = None):
+        r"""
+        Construct a Poisson tensor on the current vector field module.
+        """
+        from sage.manifolds.differentiable.poisson_tensor import PoissonTensorFieldParal
+        return PoissonTensorFieldParal(self, name, latex_name)

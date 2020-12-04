@@ -326,6 +326,10 @@ REFERENCES:
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 
+from __future__ import annotations
+from typing import Union
+from sage.manifolds.differentiable.scalarfield import DiffScalarField
+from sage.manifolds.scalarfield import ScalarField
 from sage.categories.fields import Fields
 from sage.categories.manifolds import Manifolds
 from sage.categories.homset import Hom
@@ -340,6 +344,8 @@ from sage.manifolds.subset import ManifoldSubset
 from sage.manifolds.structure import(
                             TopologicalStructure, RealTopologicalStructure,
                             DifferentialStructure, RealDifferentialStructure)
+from sage.manifolds.chart import Chart
+from sage.manifolds.differentiable.chart import RealDiffChart
 
 
 #############################################################################
@@ -507,6 +513,8 @@ class TopologicalManifold(ManifoldSubset):
 
         :mod:`sage.manifolds.manifold`
     """
+    _dim: int
+
     def __init__(self, n, name, field, structure, base_manifold=None,
                  latex_name=None, start_index=0, category=None,
                  unique_tag=None):
@@ -1146,7 +1154,7 @@ class TopologicalManifold(ManifoldSubset):
                         ind[pos] = si
                         ret = 1
 
-    def atlas(self):
+    def atlas(self) -> list[Chart]:
         r"""
         Return the list of charts that have been defined on the manifold.
 
@@ -1398,7 +1406,7 @@ class TopologicalManifold(ManifoldSubset):
         """
         return bool(self._covering_charts)
 
-    def chart(self, coordinates='', names=None, calc_method=None):
+    def chart(self, coordinates='', names=None, calc_method=None) -> Union[Chart, RealDiffChart]:
         r"""
         Define a chart, the domain of which is the manifold.
 
@@ -1846,7 +1854,7 @@ class TopologicalManifold(ManifoldSubset):
         return self._scalar_field_algebra
 
     def scalar_field(self, coord_expression=None, chart=None, name=None,
-                     latex_name=None):
+                     latex_name=None) -> Union[ScalarField, DiffScalarField]:
         r"""
         Define a scalar field on the manifold.
 

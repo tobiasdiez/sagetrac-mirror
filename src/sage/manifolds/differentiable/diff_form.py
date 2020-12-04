@@ -44,6 +44,7 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+from __future__ import annotations
 from sage.misc.cachefunc import cached_method
 from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
 from sage.manifolds.differentiable.tensorfield import TensorField
@@ -455,7 +456,7 @@ class DiffForm(TensorField):
     derivative = exterior_derivative  # allows one to use functional notation,
                                       # e.g. diff(a) for a.exterior_derivative()
 
-    def wedge(self, other):
+    def wedge(self, other: DiffForm) -> DiffForm:
         r"""
         Exterior product with another differential form.
 
@@ -1257,7 +1258,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         """
         TensorFieldParal._init_derived(self)
 
-    def _del_derived(self, del_restrictions=True):
+    def _del_derived(self, del_restrictions: bool = True):
         r"""
         Delete the derived quantities.
 

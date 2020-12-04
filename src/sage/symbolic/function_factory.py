@@ -9,7 +9,8 @@ Factory for symbolic functions
 #  version 2 or any later version.  The full text of the GPL is available at:
 #                  https://www.gnu.org/licenses/
 ###############################################################################
-from __future__ import print_function
+from __future__ import print_function, annotations
+from typing import Union
 
 from sage.symbolic.function import (SymbolicFunction, sfunctions_funcs,
                                     unpickle_wrapper)
@@ -149,7 +150,7 @@ def unpickle_function(name, nargs, latex_name, conversions, evalf_params_first,
     return function_factory(*args)
 
 
-def function(s, *args, **kwds):
+def function(s, *args, **kwds) -> Union[SymbolicFunction, list[SymbolicFunction]]:
     r"""
     Create a formal symbolic function with the name *s*.
 

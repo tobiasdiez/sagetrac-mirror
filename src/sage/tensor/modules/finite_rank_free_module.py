@@ -530,6 +530,7 @@ The components on the basis are returned by the square bracket operator for
 #******************************************************************************
 from __future__ import print_function
 from __future__ import absolute_import
+from typing import Generator, Optional
 
 from sage.misc.cachefunc import cached_method
 from sage.structure.unique_representation import UniqueRepresentation
@@ -750,6 +751,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
     """
 
     Element = FiniteRankFreeModuleElement
+    _sindex: int
 
     @staticmethod
     def __classcall_private__(cls, ring, rank, name=None, latex_name=None, start_index=0,
@@ -778,7 +780,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         return super(FiniteRankFreeModule, cls).__classcall__(
             cls, ring, rank, name, latex_name, start_index, output_formatter, category)
 
-    def __init__(self, ring, rank, name=None, latex_name=None, start_index=0,
+    def __init__(self, ring, rank, name=None, latex_name=None, start_index: int = 0,
                  output_formatter=None, category=None):
         r"""
         See :class:`FiniteRankFreeModule` for documentation and examples.
@@ -1964,7 +1966,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         else:
            return self._latex_name
 
-    def rank(self):
+    def rank(self) -> int:
         r"""
         Return the rank of the free module ``self``.
 
@@ -2084,7 +2086,7 @@ class FiniteRankFreeModule(UniqueRepresentation, Parent):
         """
         return self.dual_exterior_power(1)
 
-    def irange(self, start=None):
+    def irange(self, start: Optional[int] = None) -> Generator[int, None, None]:
         r"""
         Single index generator, labelling the elements of a basis of ``self``.
 

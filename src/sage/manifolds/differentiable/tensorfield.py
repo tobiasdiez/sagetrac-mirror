@@ -51,13 +51,25 @@ REFERENCES:
 #  the License, or (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
-from __future__ import print_function
+from __future__ import print_function, annotations
 
 from sage.rings.integer import Integer
 from sage.rings.integer_ring import ZZ
 from sage.structure.element import ModuleElementWithMutability
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
+
+from typing import Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
+    from sage.manifolds.differentiable.manifold import DifferentiableManifold
+    from sage.manifolds.differentiable.diff_map import DiffMap
+    from sage.tensor.modules.comp import Components
+    from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
+
+TensorType = Tuple[int, int]
+T = TypeVar('T', bound='TensorField')
+
 
 class TensorField(ModuleElementWithMutability):
     r"""
@@ -391,7 +403,14 @@ class TensorField(ModuleElementWithMutability):
         ValueError: the name of an immutable element cannot be changed
 
     """
-    def __init__(self, vector_field_module, tensor_type, name=None,
+
+    _name: Optional[str]
+    _latex_name: Optional[str]
+    _vmodule: VectorFieldModule
+    _domain: DifferentiableManifold
+    _ambient_domain: DifferentiableManifold
+
+    def __init__(self, vector_field_module: VectorFieldModule, tensor_type, name=None,
                  latex_name=None, sym=None, antisym=None, parent=None):
         r"""
         Construct a tensor field.
@@ -595,7 +614,7 @@ class TensorField(ModuleElementWithMutability):
         else:
            return self._latex_name
 
-    def set_name(self, name=None, latex_name=None):
+    def set_name(self, name: Optional[str] = None, latex_name: Optional[str] = None):
         r"""
         Set (or change) the text name and LaTeX name of ``self``.
 
@@ -663,7 +682,7 @@ class TensorField(ModuleElementWithMutability):
         return type(self)(self._vmodule, self._tensor_type, sym=self._sym,
                           antisym=self._antisym, parent=self.parent())
 
-    def _final_repr(self, description):
+    def _final_repr(self, description: str) -> str:
         r"""
         Part of string representation common to all derived classes of
         :class:`TensorField`.
@@ -1027,7 +1046,7 @@ class TensorField(ModuleElementWithMutability):
                                             latex_name=self._latex_name)
         self._is_zero = False  # a priori
 
-    def restrict(self, subdomain, dest_map=None):
+    def restrict(self: T, subdomain: DifferentiableManifold, dest_map: Optional[DiffMap] = None) -> T:
         r"""
         Return the restriction of ``self`` to some subdomain.
 
@@ -3170,7 +3189,7 @@ class TensorField(ModuleElementWithMutability):
             resu._restrictions[rst._domain] = rst
         return resu
 
-    def contract(self, *args):
+    def contract(self, *args: Union[int, TensorField]) -> TensorField:
         r"""
         Contraction of ``self`` with another tensor field on one or
         more indices.
