@@ -1,1 +1,1 @@
-pplpy >=0.8.4
+pplpy @ git+https://gitlab.com/videlec/pplpy/-/tree/build
