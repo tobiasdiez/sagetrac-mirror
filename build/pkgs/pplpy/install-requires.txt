@@ -1,1 +1,1 @@
-pplpy @ git+https://gitlab.com/videlec/pplpy/-/tree/build
+pplpy @ git+https://gitlab.com/videlec/pplpy@build
