@@ -23,6 +23,9 @@
 /src/environment.yml
 /src/environment-optional.yml
 
+/src/setup.cfg
+/src/requirements.txt
+
 # Various editors
 *~
 
