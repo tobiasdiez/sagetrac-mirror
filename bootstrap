@@ -96,7 +96,7 @@ SAGE_SPKG_ENABLE([$pkgname], [$pkgtype])"
                 ;;
         esac
         if [ -x "$pkgdir/bootstrap" ]; then
-            (cd $pkgdir && ./bootstrap || exit 1)
+            (cd $pkgdir && ./bootstrap) || exit 1
         fi
     done
     for filename in $(find build/pkgs -type f -name spkg-configure.m4 | sort); do

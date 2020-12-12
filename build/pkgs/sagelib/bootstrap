@@ -1,4 +1,5 @@
 #! /bin/sh
+set -e
 for infile in src/*.m4; do
     if [ -f "$infile" ]; then
         outfile="src/$(basename $infile .m4)"
