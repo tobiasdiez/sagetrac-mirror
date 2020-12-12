@@ -8,6 +8,9 @@
 ## (venv1) (sage-sh) $ pip install -r requirements.txt
 ## (venv1) (sage-sh) $ pip install -e .
 
+dnl FIXME: Including the whole package-version.txt does not work for packages that have a patchlevel....
+dnl We need a better tool to format this information.
+
 sage-conf==include(`../sage_conf/package-version.txt')
 dnl sage_setup     # Will be split out later.
 
