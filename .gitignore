@@ -25,6 +25,7 @@
 
 /src/setup.cfg
 /src/requirements.txt
+/src/Pipfile
 
 # Various editors
 *~
