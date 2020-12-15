@@ -12,9 +12,9 @@ IGNORE_MISSING_SYSTEM_PACKAGES="${4:-no}"
 STRIP_COMMENTS="sed s/#.*//;"
 SAGE_ROOT=.
 export PATH="$SAGE_ROOT"/build/bin:$PATH
-SYSTEM_PACKAGES=$(echo $(${STRIP_COMMENTS} "$SAGE_ROOT"/build/pkgs/$SYSTEM{,-bootstrap}.txt))
+SYSTEM_PACKAGES=
 CONFIGURE_ARGS="--enable-option-checking "
-for PKG_BASE in $($SAGE_ROOT/sage -package list --has-file=distros/$SYSTEM.txt $SAGE_PACKAGE_LIST_ARGS); do
+for PKG_BASE in $($SAGE_ROOT/sage -package list --has-file=distros/$SYSTEM.txt $SAGE_PACKAGE_LIST_ARGS) _bootstrap; do
     PKG_SCRIPTS="$SAGE_ROOT"/build/pkgs/$PKG_BASE
     if [ -d $PKG_SCRIPTS ]; then
        SYSTEM_PACKAGES_FILE=$PKG_SCRIPTS/distros/$SYSTEM.txt
@@ -106,6 +106,14 @@ EOF
         UPDATE="xbps-install -Su &&"
         EXISTS="xbps-query"
         INSTALL="xbps-install --yes"
+        ;;
+    opensuse*)
+	cat <<EOF
+ARG BASE_IMAGE=opensuse/leap:latest
+FROM \${BASE_IMAGE} as with-system-packages
+EOF
+        UPDATE="zypper refresh &&"
+        INSTALL="zypper --ignore-unknown install --no-confirm --auto-agree-with-licenses --no-recommends --details"
         ;;
     conda*)
         cat <<EOF
