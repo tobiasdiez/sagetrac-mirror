@@ -1,5 +1,5 @@
 r"""
-Common Digraphs
+Common digraphs
 
 All digraphs in Sage can be built through the ``digraphs`` object. In order to
 build a circuit on 15 elements, one can do::
@@ -62,7 +62,6 @@ Functions and methods
 # Distributed  under  the  terms  of  the  GNU  General  Public  License (GPL)
 #                         http://www.gnu.org/licenses/
 ################################################################################
-from __future__ import print_function, division
 from sage.cpython.string import bytes_to_str
 from sage.env import SAGE_NAUTY_BINS_PREFIX as nautyprefix
 
