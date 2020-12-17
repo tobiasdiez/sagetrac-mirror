@@ -40,4 +40,3 @@ python_version = "3.8"
 
 [packages.e1839a8]
 path = "."
-editable = true

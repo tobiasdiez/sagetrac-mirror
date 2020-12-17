@@ -37,7 +37,3 @@ networkx = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../networkx/package-version.tx
 
 [requires]
 python_version = "3.8"
-
-[packages.e1839a8]
-path = "."
-editable = true
