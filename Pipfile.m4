@@ -1,3 +1,5 @@
+## Pipfile with all packages in the Sage distribution and version information locked
+## FIXME: Many packages still missing.
 [[source]]
 name = "pypi"
 url = "https://pypi.org/simple"

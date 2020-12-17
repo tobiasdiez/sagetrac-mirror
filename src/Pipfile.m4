@@ -1,3 +1,6 @@
+## Pipfile with all dependencies of sagelib and version information as free as possible
+## (for developers to generate a dev environment)
+## FIXME: Get version info from install-requires.txt, not package-version.txt
 [[source]]
 name = "pypi"
 url = "https://pypi.org/simple"
