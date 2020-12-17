@@ -1,40 +1,39 @@
 ## Pipfile with all dependencies of sagelib and version information as free as possible
 ## (for developers to generate a dev environment)
-## FIXME: Get version info from install-requires.txt, not package-version.txt
 [[source]]
 name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pkgconfig = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../pkgconfig/package-version.txt)')"
-cython = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../cython/package-version.txt)')"
+pkgconfig = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../pkgconfig/install-requires.txt))"')"
+cython = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../cython/install-requires.txt))"')"
 pycodestyle = "*"
-ipykernel = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../ipykernel/package-version.txt)')"
+ipykernel = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../ipykernel/install-requires.txt))"')"
 tox = "*"
-jinja2 = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../jinja2/package-version.txt)')"
+jinja2 = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../jinja2/install-requires.txt))"')"
 pytest = "*"
-ipywidgets = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../ipywidgets/package-version.txt)')"
-sphinx = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../sphinx/package-version.txt)')"
+ipywidgets = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../ipywidgets/install-requires.txt))"')"
+sphinx = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../sphinx/install-requires.txt))"')"
 rope = "*"
 six = "*"
-jupyter-core = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../jupyter_core/package-version.txt)')"
+jupyter-core = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../jupyter_core/install-requires.txt))"')"
 
 [packages]
-numpy = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../numpy/package-version.txt)')"
-cysignals = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../cysignals/package-version.txt)')"
-cypari2 = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../cypari/package-version.txt)')"
-gmpy2 = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../gmpy2/package-version.txt)')"
-psutil = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../psutil/package-version.txt)')"
-pexpect = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../pexpect/package-version.txt)')"
-ipython = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../ipython/package-version.txt)')"
-sympy = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../sympy/package-version.txt)')"
-scipy = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../scipy/package-version.txt)')"
-pplpy = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../pplpy/package-version.txt)')"
-matplotlib = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../matplotlib/package-version.txt)')"
-cvxopt = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../cvxopt/package-version.txt)')"
-rpy2 = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../rpy2/package-version.txt)')"
-networkx = "==esyscmd(`printf $(sed "s/[.]p.*//;" ../networkx/package-version.txt)')"
+numpy = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../numpy/install-requires.txt))"')"
+cysignals = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../cysignals/install-requires.txt))"')"
+cypari2 = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../cypari/install-requires.txt))"')"
+gmpy2 = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../gmpy2/install-requires.txt))"')"
+psutil = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../psutil/install-requires.txt))"')"
+pexpect = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../pexpect/install-requires.txt))"')"
+ipython = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../ipython/install-requires.txt))"')"
+sympy = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../sympy/install-requires.txt))"')"
+scipy = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../scipy/install-requires.txt))"')"
+pplpy = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../pplpy/install-requires.txt))"')"
+matplotlib = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../matplotlib/install-requires.txt))"')"
+cvxopt = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../cvxopt/install-requires.txt))"')"
+rpy2 = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../rpy2/install-requires.txt))"')"
+networkx = "esyscmd(`printf "$(echo $(sed "s/#.*//;s/^[-_a-zA-Z0-9]* *//;" ../networkx/install-requires.txt))"')"
 
 [requires]
 python_version = "3.8"
