@@ -964,6 +964,14 @@ def integrate(expression, v=None, a=None, b=None, algorithm=None, hold=False):
         sage: assume(a < 1)
         sage: integrate(x*log(1/(a*x+(1-x)^2)), x, 0, 1, algorithm='maxima')
         1/4*a^2*log(a) + 1/2*sqrt(-a^2 + 4*a)*a*arctan(sqrt(-a^2 + 4*a)*(a - 2)/(a^2 - 4*a)) - 1/2*sqrt(-a^2 + 4*a)*a*arctan(sqrt(-a^2 + 4*a)/(a - 4)) - a*log(a) - sqrt(-a^2 + 4*a)*arctan(sqrt(-a^2 + 4*a)*(a - 2)/(a^2 - 4*a)) + sqrt(-a^2 + 4*a)*arctan(sqrt(-a^2 + 4*a)/(a - 4)) - 1/2*a + 3/2
+
+    The fundamental theorem of calculus holds for elliptic integrals
+    of the second kind, :trac:`26563`::
+
+        sage: x,m = SR.var('x,m', domain='real')    # long time
+        sage: integrate(elliptic_e(x,m).diff(x), x) # long time
+        elliptic_e(x, m)
+
     """
     expression, v, a, b = _normalize_integral_input(expression, v, a, b)
     if algorithm is not None:
