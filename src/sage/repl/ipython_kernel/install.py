@@ -20,7 +20,7 @@ import errno
 from sage.env import (
     SAGE_DOC, SAGE_VENV, SAGE_EXTCODE,
     SAGE_VERSION,
-    JSMOL_DIR, THREEJS_DIR,
+    THREEJS_DIR
 )
 
 
@@ -114,14 +114,21 @@ class SageKernelSpec(object):
                 return
         os.symlink(src, dst)
 
+<<<<<<< HEAD
     def use_local_jsmol(self):
         """
         Symlink jsmol to the Jupyter notebook.
+=======
+    def use_local_mathjax(self):
+        """
+        Symlink SageMath's Mathjax install to the Jupyter notebook.
+>>>>>>> c4a802d2b6cb571a8a412f58d5b60250bd2a1945
 
         EXAMPLES::
 
             sage: from sage.repl.ipython_kernel.install import SageKernelSpec
             sage: spec = SageKernelSpec(prefix=tmp_dir())
+<<<<<<< HEAD
             sage: spec.use_local_jsmol()
             sage: jsmol = os.path.join(spec.nbextensions_dir, 'jsmol')
             sage: os.path.isdir(jsmol)
@@ -131,6 +138,15 @@ class SageKernelSpec(object):
         """
         src = os.path.join(JSMOL_DIR)
         dst = os.path.join(self.nbextensions_dir, 'jsmol')
+=======
+            sage: spec.use_local_mathjax()
+            sage: mathjax = os.path.join(spec.nbextensions_dir, 'mathjax')
+            sage: os.path.isdir(mathjax)
+            True
+        """
+        src = MATHJAX_DIR
+        dst = os.path.join(self.nbextensions_dir, 'mathjax')
+>>>>>>> c4a802d2b6cb571a8a412f58d5b60250bd2a1945
         self.symlink(src, dst)
 
     def use_local_threejs(self):
@@ -257,7 +273,11 @@ class SageKernelSpec(object):
 
         """
         instance = cls(*args, **kwds)
+<<<<<<< HEAD
         instance.use_local_jsmol()
+=======
+        instance.use_local_mathjax()
+>>>>>>> c4a802d2b6cb571a8a412f58d5b60250bd2a1945
         instance.use_local_threejs()
         instance._install_spec()
         instance._symlink_resources()
