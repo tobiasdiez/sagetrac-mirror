@@ -9,7 +9,7 @@ Factory for symbolic functions
 #  version 2 or any later version.  The full text of the GPL is available at:
 #                  https://www.gnu.org/licenses/
 ###############################################################################
-from __future__ import print_function, annotations
+from __future__ import annotations
 from typing import Union
 
 from sage.symbolic.function import (SymbolicFunction, sfunctions_funcs,
