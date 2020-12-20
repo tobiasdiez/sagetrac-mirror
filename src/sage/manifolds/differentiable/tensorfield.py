@@ -51,7 +51,6 @@ REFERENCES:
 #  the License, or (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
-from __future__ import print_function
 from typing import Optional, Tuple, TYPE_CHECKING
 
 from sage.rings.integer import Integer
