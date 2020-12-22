@@ -34,7 +34,7 @@ jobs:
           # Remove lib64 folder
           ls -a /usr/share/miniconda/envs/sage-build/lib64
           rm -rf /usr/share/miniconda/envs/sage-build/lib64
-          ./configure --prefix=$CONDA_PREFIX
+          ./configure
           make
         shell: bash -l {0}
         env:
