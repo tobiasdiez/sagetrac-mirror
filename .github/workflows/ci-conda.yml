@@ -27,6 +27,9 @@ jobs:
           environment-file: environment.yml
           python-version: 3.8
           auto-activate-base: false
+      - name: Setup conda - install dependencies
+        run: conda install c-compiler cxx-compiler fortran-compiler pkg-config
+        shell: bash -l {0}
       - name: Build
         run: |
           conda info
