@@ -29,8 +29,10 @@ jobs:
           auto-activate-base: false
       - name: Build
         run: |
+          conda info
           ./configure --prefix=$CONDA_PREFIX
           make
+        shell: bash -l {0}
         env:
           EXTRA_CONFIGURE_ARGS: --enable-build-as-root
           MAKE: make -j2
