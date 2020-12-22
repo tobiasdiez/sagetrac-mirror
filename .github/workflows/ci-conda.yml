@@ -40,12 +40,9 @@ jobs:
         env:
           EXTRA_CONFIGURE_ARGS: --enable-build-as-root
           MAKE: make -j2
-          SAGE_INSTALL_GCC: no
-      - name: Set up cache
-        uses: actions/cache@v1
-        with:
-          path: src/.venv
-          key: venv-runner.os-${{ hashFiles('src/Pipfile.lock') }}
+      - name: Test
+        run: sage -tp 2 src/
+        shell: bash -l {0}
   direct:
     runs-on: ubuntu-latest
     steps:
