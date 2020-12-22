@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
   
 jobs:
-  linux:
+  on-top-of-spkg:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -40,6 +40,37 @@ jobs:
         env:
           EXTRA_CONFIGURE_ARGS: --enable-build-as-root
           MAKE: make -j2
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          path: src/.venv
+          key: venv-runner.os-${{ hashFiles('src/Pipfile.lock') }}
+  direct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y tox autoconf automake sudo
+          ./bootstrap -D
+      - name: Setup conda 
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: sage-build
+          environment-file: environment.yml
+          python-version: 3.8
+          auto-activate-base: false
+      - name: Build
+        run: |
+          conda info
+          conda list
+          # Remove lib64 folder
+          ls -a /usr/share/miniconda/envs/sage-build/lib64
+          rm -rf /usr/share/miniconda/envs/sage-build/lib64
+          ./configure --prefix=$CONDA_PREFIX
+          python src/setup.py install
+        shell: bash -l {0}
       - name: Set up cache
         uses: actions/cache@v1
         with:
