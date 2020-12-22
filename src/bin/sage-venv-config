@@ -8,6 +8,7 @@ except ImportError:
     pass
 
 from sys import prefix as SAGE_VENV
+from sage.env import VERSION
 
 def _main():
     from argparse import ArgumentParser
