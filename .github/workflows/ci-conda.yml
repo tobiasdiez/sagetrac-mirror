@@ -49,11 +49,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y tox autoconf automake sudo
-          ./bootstrap -D
+      - name: Generate code
+        run: ./bootstrap -D
       - name: Setup conda 
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -71,8 +68,6 @@ jobs:
           ./configure --prefix=$CONDA_PREFIX
           cd src && python setup.py install
         shell: bash -l {0}
-      - name: Set up cache
-        uses: actions/cache@v1
-        with:
-          path: src/.venv
-          key: venv-runner.os-${{ hashFiles('src/Pipfile.lock') }}
+      - name: Test
+        run: sage -t
+        shell: bash -l {0}
