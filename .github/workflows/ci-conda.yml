@@ -31,6 +31,9 @@ jobs:
         run: |
           conda info
           conda list
+          # Remove lib64 folder
+          ls -a /usr/share/miniconda/envs/sage-build/lib64
+          rm -rf /usr/share/miniconda/envs/sage-build/lib64
           ./configure --prefix=$CONDA_PREFIX
           make
         shell: bash -l {0}
