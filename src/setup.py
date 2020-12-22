@@ -74,7 +74,7 @@ log.warn('distributions = {0}'.format(distributions))
 
 from sage_setup.find import find_python_sources
 python_packages, python_modules, cython_modules = find_python_sources(
-    SAGE_SRC, ['sage', 'sage_setup'], distributions=distributions)
+    sage.env.SAGE_SRC, ['sage', 'sage_setup'], distributions=distributions)
 
 log.debug('python_packages = {0}'.format(python_packages))
 
@@ -88,7 +88,7 @@ from sage_setup.command.sage_install import sage_install
 #########################################################
 
 code = setup(name = 'sage',
-      version     =  SAGE_VERSION,
+      version     =  sage.env.SAGE_VERSION,
       description = 'Sage: Open Source Mathematics Software',
       license     = 'GNU Public License (GPL)',
       author      = 'William Stein et al.',
