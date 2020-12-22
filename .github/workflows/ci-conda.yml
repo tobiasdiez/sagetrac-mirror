@@ -69,5 +69,5 @@ jobs:
           cd src && python setup.py install
         shell: bash -l {0}
       - name: Test
-        run: sage -t
+        run: sage -tp 2 src/
         shell: bash -l {0}
