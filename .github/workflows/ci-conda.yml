@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y tox autoconf automake sudo
+          sudo apt-get install -y tox autoconf automake autotools-dev sudo
           ./bootstrap
       - name: Setup conda 
         uses: conda-incubator/setup-miniconda@v2
@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Generate code
-        run: ./bootstrap
+        run: ./bootstrap -D
       - name: Setup conda 
         uses: conda-incubator/setup-miniconda@v2
         with:
