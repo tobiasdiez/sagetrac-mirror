@@ -29,6 +29,7 @@ environment variables, and has the same ``SAGE_ROOT`` and ``SAGE_LOCAL``
 # ****************************************************************************
 
 
+from typing import Dict
 import sage
 import glob
 import os
@@ -40,7 +41,7 @@ from . import version
 
 # All variables set by var() appear in this SAGE_ENV dict and also
 # appear as module global (contained in __all__).
-SAGE_ENV = dict()
+SAGE_ENV: Dict[str, str] = dict()
 __all__ = ['sage_include_directories', 'cython_aliases']
 
 
@@ -467,6 +468,6 @@ def print_environment():
     """
     Print the current value of all environment variables.
     """
-    for variable_name, value in globals().items():
+    for variable_name, value in SAGE_ENV.items():
         if not variable_name.startswith('_'):
             print(f"{variable_name} = {value}")
