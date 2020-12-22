@@ -1,0 +1,42 @@
+name: Build & Test using conda
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    tags:
+      - '*'
+    branches:
+      - 'public/build/**conda**'
+  workflow_dispatch:
+  
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+      - name: Install dependencies
+        run: |
+          apt-get update -y
+          apt-get install -y tox autoconf automake sudo
+          ./bootstrap -D
+          # Since environment variables don't persist between steps in the workflow, we do not use `conda env create` but instead install directly into the base environment
+          conda env update --file environment.yml --name base
+      - name: Build
+        run: |
+          ./configure --prefix=$CONDA_ROOT
+          make
+        env:
+          EXTRA_CONFIGURE_ARGS: --enable-build-as-root
+          MAKE: make -j2
+      - name: Set up cache
+        uses: actions/cache@v1
+        with:
+          path: src/.venv
+          key: venv-runner.os-${{ hashFiles('src/Pipfile.lock') }}
