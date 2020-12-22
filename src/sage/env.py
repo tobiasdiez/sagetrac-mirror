@@ -461,3 +461,12 @@ def cython_aliases():
         pass
 
     return aliases
+
+
+def print_environment():
+    """
+    Print the current value of all environment variables.
+    """
+    for variable_name, value in globals().items():
+        if not variable_name.startswith('_'):
+            print(f"{variable_name} = {value}")

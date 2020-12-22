@@ -19,11 +19,13 @@ if os.uname().sysname == 'Darwin':
 #########################################################
 
 import sage.env
-sage.env.SAGE_SRC = os.getcwd()
-from sage.env import *
+from pathlib import Path
+sage.env.SAGE_SRC = str(Path(__file__).resolve().parent)
+sage.env.print_environment()
 
 from sage_setup.excepthook import excepthook
 sys.excepthook = excepthook
+
 
 #########################################################
 ### Configuration
