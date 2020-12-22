@@ -469,5 +469,4 @@ def print_environment():
     Print the current value of all environment variables.
     """
     for variable_name, value in SAGE_ENV.items():
-        if not variable_name.startswith('_'):
-            print(f"{variable_name} = {value}")
+        print(f"{variable_name} = {value}")
