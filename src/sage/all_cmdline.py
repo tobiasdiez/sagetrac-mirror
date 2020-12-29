@@ -18,7 +18,7 @@ sage_mode = 'cmdline'
 
 import sage.misc.startup_guard as startup_guard
 
-with startup_guard.startup():
-    from sage.all import *
-    from sage.calculus.predefined import x
-    sage.misc.session.init()
+from sage.all import *
+from sage.calculus.predefined import x
+
+sage.misc.session.init()
