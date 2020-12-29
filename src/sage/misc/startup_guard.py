@@ -6,7 +6,7 @@ IS_STARTUP: bool = False
 def startup():
     """
     Simple context manager to indicate whether Sage is currently starting,
-    i.e. importing `sage.all`.
+    e.g. importing `sage.all` etc.
     
     EXAMPLES::
 
