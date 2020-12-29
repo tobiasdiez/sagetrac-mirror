@@ -26,20 +26,20 @@ TESTS:
 #  the License, or (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
-from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
+from __future__ import annotations
 from six.moves import range
 from typing import Dict, Union, Optional
-from __future__ import annotations
 
 from sage.symbolic.expression import Expression
 from sage.manifolds.differentiable.diff_form import DiffForm, DiffFormParal
 from sage.manifolds.differentiable.diff_map import DiffMap
 from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
-
+from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
 from sage.manifolds.differentiable.manifold import DifferentiableManifold
 from sage.manifolds.differentiable.scalarfield import DiffScalarField
 from sage.manifolds.differentiable.vectorfield import VectorField
+from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
 
 
 class SymplecticForm(DiffForm):
@@ -363,15 +363,24 @@ class SymplecticForm(DiffForm):
         """
         return self.poisson().poisson_bracket(f, g)
 
-    def volume_form(self) -> DiffForm:
+    def volume_form(self, contra: int = 0) -> TensorField:
         r"""
         Liouville volume form `\omega^n` associated with the symplectic form `\omega`,
         where `2n` is the dimension of the manifold).
         TODO: Decide about normalization
 
+        INPUT:
+
+        - ``contra`` -- (default: 0) number of contravariant indices of the
+          returned tensor
+
         OUTPUT:
 
-        - volume form associated to the symplectic form
+        - if ``contra = 0``: volume form associated to the symplectic form
+        - if ``contra = k``, with `1\leq k \leq n`, the tensor field of type
+          (k,n-k) formed from `\epsilon` by raising the first k indices with
+          the symplectic form (see method
+          :meth:`~sage.manifolds.differentiable.tensorfield.TensorField.up`) 
 
         EXAMPLES:
 
@@ -388,14 +397,20 @@ class SymplecticForm(DiffForm):
             vol_form = self
             for _ in range(1, self._dim_half):
                 vol_form = vol_form.wedge(self)
-            self._vol_form = vol_form
 
             # TODO: Or use something as vol_omega as name?
             volume_name = f'{self._name}^{self._dim_half}'
             volume_latex_name = f'{self._latex_name}^{{{self._dim_half}}}'
-            self._vol_form.set_name(volume_name, volume_latex_name)
+            vol_form.set_name(volume_name, volume_latex_name)
+            self._vol_form = vol_form
 
-        return self._vol_form
+        result = self._vol_form
+        for k in range(0, contra):
+            result = result.up(self, k)
+        if contra > 1:
+            # restoring the antisymmetry after the up operation:
+            result = result.antisymmetrize(*range(contra))
+        return result
 
     def hodge_star(self, pform: DiffForm) -> DiffForm:
         r"""
@@ -431,151 +446,23 @@ class SymplecticForm(DiffForm):
 
         EXAMPLES:
 
-        Hodge dual of a 1-form in the Euclidean space `R^3`::
+        Hodge dual of any form on the symplectic vector space `R^2`::
 
-            sage: M = Manifold(3, 'M', start_index=1)
-            sage: X.<x,y,z> = M.chart()
-            sage: g = M.metric('g')
-            sage: g[1,1], g[2,2], g[3,3] = 1, 1, 1
-            sage: var('Ax Ay Az')
-            (Ax, Ay, Az)
-            sage: a = M.one_form(Ax, Ay, Az, name='A')
-            sage: sa = g.hodge_star(a) ; sa
-            2-form *A on the 3-dimensional differentiable manifold M
-            sage: sa.display()
-            *A = Az dx/\dy - Ay dx/\dz + Ax dy/\dz
-            sage: ssa = g.hodge_star(sa) ; ssa
-            1-form **A on the 3-dimensional differentiable manifold M
-            sage: ssa.display()
-            **A = Ax dx + Ay dy + Az dz
-            sage: ssa == a  # must hold for a Riemannian metric in dimension 3
-            True
-
-        Hodge dual of a 0-form (scalar field) in `R^3`::
-
-            sage: f = M.scalar_field(function('F')(x,y,z), name='f')
-            sage: sf = g.hodge_star(f) ; sf
-            3-form *f on the 3-dimensional differentiable manifold M
-            sage: sf.display()
-            *f = F(x, y, z) dx/\dy/\dz
-            sage: ssf = g.hodge_star(sf) ; ssf
-            Scalar field **f on the 3-dimensional differentiable manifold M
-            sage: ssf.display()
-            **f: M --> R
-               (x, y, z) |--> F(x, y, z)
-            sage: ssf == f # must hold for a Riemannian metric
-            True
-
-        Hodge dual of a 0-form in Minkowski spacetime::
-
-            sage: M = Manifold(4, 'M')
-            sage: X.<t,x,y,z> = M.chart()
-            sage: g = M.lorentzian_metric('g')
-            sage: g[0,0], g[1,1], g[2,2], g[3,3] = -1, 1, 1, 1
-            sage: g.display()  # Minkowski metric
-            g = -dt*dt + dx*dx + dy*dy + dz*dz
-            sage: var('f0')
-            f0
-            sage: f = M.scalar_field(f0, name='f')
-            sage: sf = g.hodge_star(f) ; sf
-            4-form *f on the 4-dimensional differentiable manifold M
-            sage: sf.display()
-            *f = f0 dt/\dx/\dy/\dz
-            sage: ssf = g.hodge_star(sf) ; ssf
-            Scalar field **f on the 4-dimensional differentiable manifold M
-            sage: ssf.display()
-            **f: M --> R
-               (t, x, y, z) |--> -f0
-            sage: ssf == -f  # must hold for a Lorentzian metric
-            True
-
-        Hodge dual of a 1-form in Minkowski spacetime::
-
-            sage: var('At Ax Ay Az')
-            (At, Ax, Ay, Az)
-            sage: a = M.one_form(At, Ax, Ay, Az, name='A')
-            sage: a.display()
-            A = At dt + Ax dx + Ay dy + Az dz
-            sage: sa = g.hodge_star(a) ; sa
-            3-form *A on the 4-dimensional differentiable manifold M
-            sage: sa.display()
-            *A = -Az dt/\dx/\dy + Ay dt/\dx/\dz - Ax dt/\dy/\dz - At dx/\dy/\dz
-            sage: ssa = g.hodge_star(sa) ; ssa
-            1-form **A on the 4-dimensional differentiable manifold M
-            sage: ssa.display()
-            **A = At dt + Ax dx + Ay dy + Az dz
-            sage: ssa == a  # must hold for a Lorentzian metric in dimension 4
-            True
-
-        Hodge dual of a 2-form in Minkowski spacetime::
-
-            sage: F = M.diff_form(2, name='F')
-            sage: var('Ex Ey Ez Bx By Bz')
-            (Ex, Ey, Ez, Bx, By, Bz)
-            sage: F[0,1], F[0,2], F[0,3] = -Ex, -Ey, -Ez
-            sage: F[1,2], F[1,3], F[2,3] = Bz, -By, Bx
-            sage: F[:]
-            [  0 -Ex -Ey -Ez]
-            [ Ex   0  Bz -By]
-            [ Ey -Bz   0  Bx]
-            [ Ez  By -Bx   0]
-            sage: sF = g.hodge_star(F) ; sF
-            2-form *F on the 4-dimensional differentiable manifold M
-            sage: sF[:]
-            [  0  Bx  By  Bz]
-            [-Bx   0  Ez -Ey]
-            [-By -Ez   0  Ex]
-            [-Bz  Ey -Ex   0]
-            sage: ssF = g.hodge_star(sF) ; ssF
-            2-form **F on the 4-dimensional differentiable manifold M
-            sage: ssF[:]
-            [  0  Ex  Ey  Ez]
-            [-Ex   0 -Bz  By]
-            [-Ey  Bz   0 -Bx]
-            [-Ez -By  Bx   0]
-            sage: ssF.display()
-            **F = Ex dt/\dx + Ey dt/\dy + Ez dt/\dz - Bz dx/\dy + By dx/\dz
-             - Bx dy/\dz
-            sage: F.display()
-            F = -Ex dt/\dx - Ey dt/\dy - Ez dt/\dz + Bz dx/\dy - By dx/\dz
-             + Bx dy/\dz
-            sage: ssF == -F  # must hold for a Lorentzian metric in dimension 4
-            True
-
-        Test of the standard identity
-
-        .. MATH::
-
-            *(A\wedge B) = \epsilon(A^\sharp, B^\sharp, ., .)
-
-        where `A` and `B` are any 1-forms and `A^\sharp` and `B^\sharp` the
-        vectors associated to them by the metric `g` (index raising)::
-
-            sage: var('Bt Bx By Bz')
-            (Bt, Bx, By, Bz)
-            sage: b = M.one_form(Bt, Bx, By, Bz, name='B')
-            sage: b.display()
-            B = Bt dt + Bx dx + By dy + Bz dz
-            sage: epsilon = g.volume_form()
-            sage: g.hodge_star(a.wedge(b)) == epsilon.contract(0,a.up(g)).contract(0,b.up(g))
-            True
-
+            sage: M = SymplecticVectorSpace(2)
+            sage: omega = M.symplectic_form()
+            sage: a = M.one_form(1, 0, name='a')
+            sage: omega.hodge_star(a).display()
+            *a = dq
+            sage: b = M.one_form(0, 1, name='a')
+            sage: omega.hodge_star(b).display()
+            *b = dp
+            sage: f = M.scalar_field(1, name='f')
+            sage: omega.hodge_star(f).display()
+            *f = dq/\dp
+            sage: omega.hodge_star(omega).display()
+            *omega = 1
         """
-        from sage.functions.other import factorial
-        from sage.tensor.modules.format_utilities import format_unop_txt, format_unop_latex
-        p = pform.tensor_type()[1]
-        eps = self.volume_form(p)
-        if p == 0:
-            dom_resu = self._domain.intersection(pform.domain())
-            resu = pform.restrict(dom_resu) * eps.restrict(dom_resu)
-        else:
-            args = list(range(p)) + [eps] + list(range(p))
-            resu = pform.contract(*args)
-        if p > 1:
-            resu = resu / factorial(p)
-        resu.set_name(name=format_unop_txt('*', pform._name),
-                    latex_name=format_unop_latex(r'\star ', pform._latex_name))
-        return resu
+        return pform.hodge_dual(self)
 
 
 class SymplecticFormParal(SymplecticForm, DiffFormParal):

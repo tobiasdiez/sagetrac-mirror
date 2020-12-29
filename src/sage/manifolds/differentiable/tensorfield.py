@@ -52,13 +52,14 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+from __future__ import annotations
 from sage.rings.integer import Integer
 from sage.rings.integer_ring import ZZ
 from sage.structure.element import ModuleElementWithMutability
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 
-from typing import Optional, TYPE_CHECKING, Tuple, Union
+from typing import Optional, TYPE_CHECKING, Tuple, Union, overload
 
 if TYPE_CHECKING:
     from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
@@ -819,7 +820,7 @@ class TensorField(ModuleElementWithMutability):
 
     #### Simple accessors ####
 
-    def domain(self):
+    def domain(self) -> DifferentiableManifold:
         r"""
         Return the manifold on which ``self`` is defined.
 
@@ -870,7 +871,7 @@ class TensorField(ModuleElementWithMutability):
         """
         return self._vmodule
 
-    def tensor_type(self):
+    def tensor_type(self) -> Tuple[int, int]:
         r"""
         Return the tensor type of ``self``.
 
@@ -1039,7 +1040,7 @@ class TensorField(ModuleElementWithMutability):
                                             latex_name=self._latex_name)
         self._is_zero = False  # a priori
 
-    def restrict(self, subdomain, dest_map=None):
+    def restrict(self, subdomain: DifferentiableManifold, dest_map: Optional[DiffMap] = None) -> TensorField:
         r"""
         Return the restriction of ``self`` to some subdomain.
 
@@ -2664,7 +2665,7 @@ class TensorField(ModuleElementWithMutability):
     ######### End of ModuleElement arithmetic operators ########
 
     # TODO: Move to acted_upon or _rmul_
-    def __mul__(self, other):
+    def __mul__(self, other: TensorField) -> TensorField:
         r"""
         Tensor product (or multiplication of the right by a scalar).
 
@@ -2800,7 +2801,7 @@ class TensorField(ModuleElementWithMutability):
 
         return resu
 
-    def __truediv__(self, scalar):
+    def __truediv__(self, scalar) -> TensorField:
         r"""
         Division by a scalar field.
 
@@ -3182,7 +3183,7 @@ class TensorField(ModuleElementWithMutability):
             resu._restrictions[rst._domain] = rst
         return resu
 
-    def contract(self, *args):
+    def contract(self, *args: Union[int, TensorField]) -> TensorField:
         r"""
         Contraction of ``self`` with another tensor field on one or
         more indices.

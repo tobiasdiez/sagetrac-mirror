@@ -44,10 +44,16 @@ REFERENCES:
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 from sage.misc.cachefunc import cached_method
 from sage.tensor.modules.free_module_alt_form import FreeModuleAltForm
 from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
+
+if TYPE_CHECKING:
+    from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
+    from sage.manifolds.differentiable.symplectic_form import SymplecticForm
 
 
 class DiffForm(TensorField):
@@ -455,7 +461,7 @@ class DiffForm(TensorField):
     derivative = exterior_derivative  # allows one to use functional notation,
                                       # e.g. diff(a) for a.exterior_derivative()
 
-    def wedge(self, other):
+    def wedge(self, other: DiffForm) -> DiffForm:
         r"""
         Exterior product with another differential form.
 
@@ -602,13 +608,13 @@ class DiffForm(TensorField):
         """
         return self._tensor_rank
 
-    def hodge_dual(self, metric):
+    def hodge_dual(self, nondegenerate_tensor: Union[PseudoRiemannianMetric, SymplecticForm]) -> DiffForm:
         r"""
-        Compute the Hodge dual of the differential form with respect to some
-        metric.
+        Compute the Hodge dual of the differential form with respect to some non-degenerate
+        bilinear form (Riemaninan metric or symplectic form).
 
         If the differential form is a `p`-form `A`, its *Hodge dual* with
-        respect to a pseudo-Riemannian metric `g` is the
+        respect to the non-degenerate form `g` is the
         `(n-p)`-form `*A` defined by
 
         .. MATH::
@@ -623,9 +629,11 @@ class DiffForm(TensorField):
 
         INPUT:
 
-        - ``metric``: a pseudo-Riemannian metric defined on the same manifold
+        - ``nondegenerate_tensor``: a non-degenerate bilinear form defined on the same manifold
           as the current differential form; must be an instance of
-          :class:`~sage.manifolds.differentiable.metric.PseudoRiemannianMetric`
+          :class:`~sage.manifolds.differentiable.metric.PseudoRiemannianMetric` or
+          :class:`~sage.manifolds.differentiable.symplectic_form.SymplecticForm`.
+
 
         OUTPUT:
 
@@ -706,7 +714,22 @@ class DiffForm(TensorField):
             on V: (u, v) |--> 1
 
         """
-        return metric.hodge_star(self)
+        from sage.functions.other import factorial
+        from sage.tensor.modules.format_utilities import format_unop_txt, \
+                                                         format_unop_latex
+
+        p = self.tensor_type()[1]
+        eps = nondegenerate_tensor.volume_form(p)
+        if p == 0:
+            common_domain = nondegenerate_tensor.domain().intersection(self.domain())
+            result = self.restrict(common_domain) * eps.restrict(common_domain)
+        else:
+            result = self.contract(*range(p), eps, *range(p))
+            if p > 1:
+                result = result / factorial(p)
+        result.set_name(name=format_unop_txt('*', self._name),
+                    latex_name=format_unop_latex(r'\star ', self._latex_name))
+        return result
 
     def interior_product(self, qvect):
         r"""
