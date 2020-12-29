@@ -16,8 +16,6 @@ This is all.py (load all sage functions) plus set-up for the Sage commandline.
 
 sage_mode = 'cmdline'
 
-import sage.misc.startup_guard as startup_guard
-
 from sage.all import *
 from sage.calculus.predefined import x
 
