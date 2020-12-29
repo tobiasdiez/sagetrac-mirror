@@ -28,11 +28,9 @@ environment variables, and has the same ``SAGE_ROOT`` and ``SAGE_LOCAL``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
-from __future__ import absolute_import
-from typing import Optional
+from typing import List, Optional
 
 import sage
-import glob
 import os
 import socket
 import sys
@@ -160,22 +158,27 @@ var('SAGE_VERSION',        version.version)
 var('SAGE_DATE',           version.date)
 var('SAGE_VERSION_BANNER', version.banner)
 
-# bunch of sage directories and files
-var('SAGE_LOCAL',          os.path.abspath(sys.prefix))
+# virtual environment where sagelib is installed
+var('SAGE_VENV',           os.path.abspath(sys.prefix))
+var('SAGE_LIB',            os.path.dirname(os.path.dirname(sage.__file__)))
+var('SAGE_EXTCODE',        join(SAGE_LIB, 'sage', 'ext_data'))
+
+# prefix hierarchy where non-Python packages are installed
+var('SAGE_LOCAL',          SAGE_VENV)
 var('SAGE_ETC',            join(SAGE_LOCAL, 'etc'))
 var('SAGE_INC',            join(SAGE_LOCAL, 'include'))
 var('SAGE_SHARE',          join(SAGE_LOCAL, 'share'))
 var('SAGE_DOC',            join(SAGE_SHARE, 'doc', 'sage'))
 var('SAGE_SPKG_INST',      join(SAGE_LOCAL, 'var', 'lib', 'sage', 'installed'))
-var('SAGE_LIB',            os.path.dirname(os.path.dirname(sage.__file__)))
-var('SAGE_EXTCODE',        join(SAGE_LIB, 'sage', 'ext_data'))
 
+# source tree of the Sage distribution
 var('SAGE_ROOT')           # no fallback for SAGE_ROOT
 var('SAGE_SRC',            join(SAGE_ROOT, 'src'), SAGE_LIB)
 var('SAGE_DOC_SRC',        join(SAGE_ROOT, 'src', 'doc'), SAGE_DOC)
 var('SAGE_PKGS',           join(SAGE_ROOT, 'build', 'pkgs'))
 var('SAGE_ROOT_GIT',       join(SAGE_ROOT, '.git'))
 
+# ~/.sage
 var('DOT_SAGE',            join(os.environ.get('HOME'), '.sage'))
 var('SAGE_STARTUP_FILE',   join(DOT_SAGE, 'init.sage'))
 
@@ -190,7 +193,6 @@ var('COMBINATORIAL_DESIGN_DATA_DIR', join(SAGE_SHARE, 'combinatorial_designs'))
 var('CREMONA_MINI_DATA_DIR',         join(SAGE_SHARE, 'cremona'))
 var('CREMONA_LARGE_DATA_DIR',        join(SAGE_SHARE, 'cremona'))
 var('JMOL_DIR',                      join(SAGE_SHARE, 'jmol'))
-var('JSMOL_DIR',                     join(SAGE_SHARE, 'jsmol'))
 var('MATHJAX_DIR',                   join(SAGE_SHARE, 'mathjax'))
 var('MTXLIB',                        join(SAGE_SHARE, 'meataxe'))
 var('THREEJS_DIR',                   join(SAGE_SHARE, 'threejs'))
@@ -207,7 +209,7 @@ var('SAGE_BANNER', '')
 var('SAGE_IMPORTALL', 'yes')
 
 
-def _get_shared_lib_path(libname, *additional_libnames) -> Optional[str]:
+def _get_shared_lib_path(*libnames: str) -> Optional[str]:
     """
     Return the full path to a shared library file installed in
     ``$SAGE_LOCAL/lib`` or the directories associated with the
@@ -225,7 +227,7 @@ def _get_shared_lib_path(libname, *additional_libnames) -> Optional[str]:
     For distributions like Debian that use a multiarch layout, we also try the
     multiarch lib paths (i.e. ``/usr/lib/<arch>/``).
 
-    This returns ``None`` if the file does not exist.
+    This returns ``None`` if no matching library file could be found.
 
     EXAMPLES::
 
@@ -245,14 +247,14 @@ def _get_shared_lib_path(libname, *additional_libnames) -> Optional[str]:
         True
     """
 
-    for libname in (libname,) + additional_libnames:
-        search_directories: list[Path] = []
-        patterns: list[str] = []
+    for libname in libnames:
+        search_directories: List[Path] = []
+        patterns: List[str] = []
         if sys.platform == 'cygwin':
             # Later down we take the first matching DLL found, so search
             # SAGE_LOCAL first so that it takes precedence
             search_directories = [
-                _get_sage_local() / 'bin',
+                Path(SAGE_LOCAL) / 'bin',
                 Path(sysconfig.get_config_var('BINDIR')),
             ]
             # Note: The following is not very robust, since if there are multible
@@ -266,7 +268,7 @@ def _get_shared_lib_path(libname, *additional_libnames) -> Optional[str]:
             else:
                 ext = 'so'
 
-            search_directories = [_get_sage_local() / 'lib']
+            search_directories = [Path(SAGE_LOCAL) / 'lib']
             libdir = sysconfig.get_config_var('LIBDIR')
             if libdir is not None:
                 libdir = Path(libdir)
@@ -287,16 +289,13 @@ def _get_shared_lib_path(libname, *additional_libnames) -> Optional[str]:
     # Just return None if no files were found
     return None
 
-def _get_sage_local() -> Path:
-    return Path(SAGE_LOCAL)
-
 # locate singular shared object
 # On Debian it's libsingular-Singular so try that as well
 SINGULAR_SO = _get_shared_lib_path('Singular', 'singular-Singular')
 var('SINGULAR_SO', SINGULAR_SO)
 
 # locate libgap shared object
-GAP_SO = _get_shared_lib_path('gap','')
+GAP_SO = _get_shared_lib_path('gap')
 var('GAP_SO', GAP_SO)
 
 # post process
@@ -436,6 +435,8 @@ def cython_aliases():
 
     aliases["LINUX_NOEXECSTACK"] = uname_specific("Linux", ["-Wl,-z,noexecstack"],
                                                   [])
+    aliases["CYGWIN_SQLITE3_LIBS"] = uname_specific("CYGWIN", ["sqlite3"],
+                                                    [])
 
     # LinBox needs special care because it actually requires C++11 with
     # GNU extensions: -std=c++11 does not work, you need -std=gnu++11
