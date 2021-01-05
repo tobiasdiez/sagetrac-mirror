@@ -41,7 +41,7 @@ REFERENCES:
 # *****************************************************************************
 
 from __future__ import annotations
-from typing import overload, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from sage.rings.integer import Integer
 from sage.manifolds.differentiable.tensorfield import TensorField
 from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal

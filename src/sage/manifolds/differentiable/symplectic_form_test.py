@@ -1,12 +1,11 @@
 from _pytest.fixtures import FixtureRequest
-from sage.tensor.modules.format_utilities import FormattedExpansion
 import pytest
 
 # TODO: Remove sage.all import as soon as it's no longer necessary to load everything upfront
 import sage.all
 from sage.manifolds.manifold import Manifold
 from sage.manifolds.differentiable.manifold import DifferentiableManifold
-from sage.manifolds.catalog import Sphere
+from sage.manifolds.differentiable.examples.sphere import Sphere
 from sage.manifolds.differentiable.symplectic_form import SymplecticForm
 from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
 from sage.symbolic.function_factory import function
@@ -48,10 +47,7 @@ class TestCoherenceOfFormulas:
         if request.param == "R2":
             return SymplecticVectorSpace(2, 'R2', symplectic_name='omega')
         elif request.param == "S2":
-            # TODO: Return sphere here instead
-            # Problem: we use cartesian_coordinates below
             return Sphere(2)
-            #return SymplecticVectorSpace(4, 'R4', symplectic_name='omega')
 
     @pytest.fixture()
     def omega(self, M):

@@ -21,7 +21,6 @@ TESTS::
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
-from sage.categories.manifolds import Manifolds
 from typing import Optional
 
 from sage.manifolds.differentiable.symplectic_form import SymplecticForm, SymplecticFormParal

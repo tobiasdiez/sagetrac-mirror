@@ -59,13 +59,11 @@ from sage.structure.element import ModuleElementWithMutability
 from sage.tensor.modules.free_module_tensor import FreeModuleTensor
 from sage.tensor.modules.tensor_with_indices import TensorWithIndices
 
-from typing import Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import Optional, TYPE_CHECKING, Tuple, Union
 
 if TYPE_CHECKING:
-    from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
     from sage.manifolds.differentiable.manifold import DifferentiableManifold
     from sage.manifolds.differentiable.diff_map import DiffMap
-    from sage.tensor.modules.comp import Components
     from sage.manifolds.differentiable.metric import PseudoRiemannianMetric
     from sage.manifolds.differentiable.symplectic_form import SymplecticForm
     from sage.manifolds.differentiable.poisson_tensor import PoissonTensorField
