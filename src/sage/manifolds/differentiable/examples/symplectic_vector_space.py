@@ -5,9 +5,10 @@ AUTHORS:
 
 - Tobias Diez (2020): initial version
 
-TESTS:
+TESTS::
+
     sage: import pytest
-    sage: pytest.main("symplectic_vector_space_test.py")
+    sage: pytest.main(["symplectic_vector_space_test.py"])
     TODO: add output
 """
 
@@ -47,29 +48,27 @@ class SymplecticVectorSpace(EuclideanSpace):
         - ``name`` -- name (symbol) given to the underlying vector space; if ``None``, the name will be set to ``'V'``
         - ``latex_name`` -- LaTeX symbol to denote the underlying vector space; if ``None``, it is set to ``name``
         - ``coordinates`` -- (default: ``'Cartesian'``) the
-        type of coordinates to be initialized at the Euclidean space
-        creation; allowed values are
+            type of coordinates to be initialized at the Euclidean space
+            creation; allowed values are
 
-        - ``'Cartesian'`` (canonical coordinates on `\RR^{2n}`)
-        - ``'polar'`` for ``dimension=2`` only (see
-            :meth:`~sage.manifolds.differentiable.examples.euclidean.EuclideanPlane.polar_coordinates`)
+            - ``'Cartesian'`` (canonical coordinates on `\RR^{2n}`)
+            - ``'polar'`` for ``dimension=2`` only (see
+                :meth:`~sage.manifolds.differentiable.examples.euclidean.EuclideanPlane.polar_coordinates`)
 
-        - ``symbols`` -- the coordinate
-        text symbols and LaTeX symbols, with the same conventions as the
-        argument ``coordinates`` in
-        :class:`~sage.manifolds.differentiable.chart.RealDiffChart`, namely
-        ``symbols`` is a string of coordinate fields separated by a blank
-        space, where each field contains the coordinate's text symbol and
-        possibly the coordinate's LaTeX symbol (when the latter is different
-        from the text symbol), both symbols being separated by a colon
-        (``:``); if ``None``, the symbols will be automatically generated
-        according to the value of ``coordinates``
+        - ``symbols`` -- the coordinate text symbols and LaTeX symbols, with the same conventions as the
+            argument ``coordinates`` in :class:`~sage.manifolds.differentiable.chart.RealDiffChart`, namely
+            ``symbols`` is a string of coordinate fields separated by a blank
+            space, where each field contains the coordinate's text symbol and
+            possibly the coordinate's LaTeX symbol (when the latter is different
+            from the text symbol), both symbols being separated by a colon
+            (``:``); if ``None``, the symbols will be automatically generated
+            according to the value of ``coordinates``
         - ``symplectic_name`` -- name (symbol) given to the symplectic form
         - ``symplecic_latex_name`` -- LaTeX symbol to denote the symplectic form;
             if none is provided, it is set to ``symplectic_name``
         - ``start_index`` -- lower value of the range of
-        indices used for "indexed objects" in the vector space, e.g.
-        coordinates of a chart
+            indices used for "indexed objects" in the vector space, e.g.
+            coordinates of a chart
         - ``base_manifold`` -- if not ``None``, the created object is then an open subset
             of ``base_manifold``
 
