@@ -1565,7 +1565,7 @@ class DiffFormParal(FreeModuleAltForm, TensorFieldParal):
         for more examples.
 
         """
-        return metric.hodge_star(self)
+        return DiffForm.hodge_dual(self, metric)
 
     def interior_product(self, qvect):
         r"""

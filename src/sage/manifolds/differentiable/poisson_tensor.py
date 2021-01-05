@@ -76,13 +76,17 @@ class PoissonTensorField(TensorField):
             sage: M.<q, p> = EuclideanSpace(2, "R2", symbols=r"q:q p:p")
             sage: poisson = M.poisson_tensor('varpi')
             sage: poisson.set_comp()[1,2] = -1
-            sage: f = M.scalar_function('f')
-            sage: Xf = omega.hamiltonian_vector_field(f)
+            sage: f = M.scalar_field({ chart: function('f')(*chart[:]) for chart in M.atlas() }, name='f')
+            sage: f.display()
+            f: R2 --> R
+                (q, p) |--> f(q, p)
+            sage: Xf = poisson.hamiltonian_vector_field(f)
             sage: Xf.display()
             Xf = d(f)/dp e_q - d(f)/dq e_p
         """
         vector_field = - self.sharp(function.exterior_derivative())
-        vector_field.set_name('X' + function._name, 'X_{' + function._latex_name + '}')
+        if function._name is not None:
+            vector_field.set_name(f"X{function._name}", f"X_{{{function._latex_name}}}")
         return vector_field
 
     def sharp(self, form: DiffForm) -> VectorField:
@@ -102,7 +106,7 @@ class PoissonTensorField(TensorField):
             raise ValueError(f"the degree of the differential form must be one but it is {form.degree()}")
 
         vector_field = form.up(self)
-        vector_field.set_name(form._name + '_sharp', form._latex_name + '^\\sharp')
+        vector_field.set_name(f"{form._name}_sharp", f"{form._latex_name}^\\sharp")
         return vector_field
 
     def poisson_bracket(self, f: DiffScalarField, g: DiffScalarField) -> DiffScalarField:

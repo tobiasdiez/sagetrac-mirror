@@ -17,7 +17,7 @@ REFERENCES:
 
 TESTS:
     sage: import pytest
-    sage: pytest.main("symplectic_form_test.py")
+    sage: pytest.main(["symplectic_form_test.py"])
     TODO: add output
 """
 # *****************************************************************************
@@ -91,7 +91,7 @@ class SymplecticForm(DiffForm):
         Standard symplectic form on `\RR^2`::
 
             sage: M.<q, p> = EuclideanSpace(2, "R2", r"\mathbb{R}^2", symbols=r"q:q p:p")
-            sage: omega = SymplecticForm(M, 'omega', r'\omega')
+            sage: omega = M.symplectic_form('omega', r'\omega')
             sage: omega.set_comp()[1,2] = -1
             sage: omega.display()
             omega = -dq/\dp
@@ -163,7 +163,7 @@ class SymplecticForm(DiffForm):
             self._vol_form._del_derived()
             self._vol_form = None
 
-    def restrict(self, subdomain: DifferentiableManifold, dest_map: Optional[DiffMap] = None) -> 'SymplecticForm':
+    def restrict(self, subdomain: DifferentiableManifold, dest_map: Optional[DiffMap] = None) -> DiffForm:
         r"""
         Return the restriction of the symplectic form to some subdomain.
 
@@ -178,16 +178,15 @@ class SymplecticForm(DiffForm):
 
         OUTPUT:
 
-        - the restricted symplectic form.
+        - the restricted form.
 
         EXAMPLES::
 
             sage: M = Manifold(6, 'M')
-            sage: omega = SymplecticForm(M)
+            sage: omega = M.symplectic_form()
             sage: U = M.open_subset('U')
             sage: omega.restrict(U)
-            Symplectic form omega on the Open subset U of the
-             6-dimensional differentiable manifold M
+            2-form omega on the Open subset U of the 6-dimensional differentiable manifold M
         """
         if subdomain == self._domain:
             return self
@@ -221,11 +220,12 @@ class SymplecticForm(DiffForm):
 
         Volume form on the sphere as a symplectic form:
 
-            sage: M = Sphere(2)
-            sage: vol_form = M.metric().volume_form()
+            sage: from sage.manifolds.differentiable.symplectic_form import SymplecticForm
+            sage: M = manifolds.Sphere(2, coordinates='stereographic')
+            sage: vol_form = M.induced_metric().volume_form()
             sage: omega = SymplecticForm.wrap(vol_form, 'omega', r'\omega')
             sage: omega.display()
-            TODO
+            omega = -4/(y1^4 + y2^4 + 2*(y1^2 + 1)*y2^2 + 2*y1^2 + 1) dy1/\dy2
         """
         if form.degree() != 2:
             raise TypeError("the argument must be a form of degree 2")
@@ -238,7 +238,7 @@ class SymplecticForm(DiffForm):
         symplectic_form = form.base_module().symplectic_form(name, latex_name)
 
         for dom, rst in form._restrictions.items():
-            symplectic_form._restrictions[dom] = SymplecticForm.wrap(rst)
+            symplectic_form._restrictions[dom] = SymplecticForm.wrap(rst, name, latex_name)
 
         if isinstance(form, DiffFormParal):
             for frame in form._components:
@@ -274,13 +274,14 @@ class SymplecticForm(DiffForm):
 
         Poisson tensor of `2`-dimensional symplectic vector space::
 
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
             sage: M = SymplecticVectorSpace(2)
             sage: omega = M.symplectic_form()
             sage: poisson = omega.poisson(); poisson
-            Tensor field inv_g of type (2,0) on the 2-dimensional differentiable manifold S^2
+            Tensor field poisson_omega of type (2,0) on the 2-dimensional symplectic vector space V
             sage: poisson.display()
-            inv_g = (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dx*d/dx
-             + (1/4*x^4 + 1/4*y^4 + 1/2*(x^2 + 1)*y^2 + 1/2*x^2 + 1/4) d/dy*d/dy
+            poisson_omega = -e_q*e_p + e_p*e_q
+            TOOD: Rewrite this via wedge product?
         """
 
         if self._poisson is None:
@@ -310,15 +311,16 @@ class SymplecticForm(DiffForm):
         - ```function`` -- the function generating the Hamiltonian vector field
 
         EXAMPLES:
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
             sage: M = SymplecticVectorSpace(2)
             sage: omega = M.symplectic_form()
-            sage: f = M.scalar_function('f')
+            sage: f = M.scalar_field({ chart: function('f')(*chart[:]) for chart in M.atlas() }, name='f')
+            sage: f.display()
+            f: V --> R
+                (q, p) |--> f(q, p)
             sage: Xf = omega.hamiltonian_vector_field(f)
             sage: Xf.display()
             Xf = d(f)/dp e_q - d(f)/dq e_p
-        """
-        r"""
-        
         """
         return self.poisson().hamiltonian_vector_field(function)
     
@@ -386,12 +388,13 @@ class SymplecticForm(DiffForm):
 
         Volume form on `\RR^4`::
 
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
             sage: M = SymplecticVectorSpace(4, 'R4')
             sage: omega = M.symplectic_form()
             sage: vol = omega.volume_form() ; vol
-            4-form omega^2 on the 4-dimensional differentiable manifold R4
+            4-form omega^2 on the 4-dimensional symplectic vector space R4
             sage: vol.display()
-            omega^2 = TODO: add
+            omega^2 = 2 dq1/\dp1/\dq2/\dp2
         """
         if self._vol_form is None:
             vol_form = self
@@ -448,19 +451,21 @@ class SymplecticForm(DiffForm):
 
         Hodge dual of any form on the symplectic vector space `R^2`::
 
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
             sage: M = SymplecticVectorSpace(2)
             sage: omega = M.symplectic_form()
             sage: a = M.one_form(1, 0, name='a')
             sage: omega.hodge_star(a).display()
-            *a = dq
-            sage: b = M.one_form(0, 1, name='a')
+            *a = -dq
+            sage: b = M.one_form(0, 1, name='b')
             sage: omega.hodge_star(b).display()
-            *b = dp
+            *b = -dp
             sage: f = M.scalar_field(1, name='f')
             sage: omega.hodge_star(f).display()
-            *f = dq/\dp
+            *f = -dq/\dp
             sage: omega.hodge_star(omega).display()
-            *omega = 1
+            *omega^1: V --> R
+            (q, p) |--> 1
         """
         return pform.hodge_dual(self)
 
@@ -624,6 +629,7 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
         dim = self._ambient_domain.dimension()
         if dim % 2 == 1:
             raise ValueError(f"the dimension of the manifold must be even but it is {dim}")
+        self._dim_half = dim // 2
         
         # Initialization of derived quantities
         SymplecticFormParal._init_derived(self)
