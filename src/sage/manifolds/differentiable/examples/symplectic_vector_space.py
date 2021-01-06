@@ -21,7 +21,7 @@ TESTS::
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from sage.manifolds.differentiable.symplectic_form import SymplecticForm, SymplecticFormParal
 from sage.manifolds.differentiable.examples.euclidean import EuclideanSpace
@@ -37,9 +37,9 @@ class SymplecticVectorSpace(EuclideanSpace):
     _symplectic_form: SymplecticForm
 
     def __init__(self, dimension: int, name: Optional[str] = None, latex_name: Optional[str] = None,
-                 coordinates='Cartesian', symbols: Optional[str] = None, symplectic_name: Optional[str] = 'omega',
+                 coordinates: str ='Cartesian', symbols: Optional[str] = None, symplectic_name: Optional[str] = 'omega',
                  symplectic_latex_name: Optional[str] = None, start_index: int = 1,
-                 base_manifold: Optional['SymplecticVectorSpace'] = None):
+                 base_manifold: Optional['SymplecticVectorSpace'] = None, names: Optional[Tuple[str]] = None):
         r"""
         INPUT:
 
@@ -70,17 +70,26 @@ class SymplecticVectorSpace(EuclideanSpace):
             coordinates of a chart
         - ``base_manifold`` -- if not ``None``, the created object is then an open subset
             of ``base_manifold``
+        - ``names`` -- (default: ``None``) unused argument, except if
+            ``symbols`` is not provided; it must then be a tuple containing
+            the coordinate symbols (this is guaranteed if the shortcut operator
+            ``<,>`` is used)
+            If ``names`` is specified, then ``dimension`` does not have to be specified.
 
         EXAMPLES:
 
         Standard symplectic form on `\RR^2`::
 
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
             sage: M.<q, p> = SymplecticVectorSpace(2, symplectic_name='omega')
             sage: omega = M.symplectic_form()
             sage: omega.display()
             omega = -dq/\dp
         """
         dim_half = dimension // 2
+
+        if names is not None and symbols is None:
+            symbols = ' '.join(names)
 
         if symbols is None:
             if dim_half == 1:
@@ -117,6 +126,7 @@ class SymplecticVectorSpace(EuclideanSpace):
 
         Standard symplectic form on `\RR^2`::
 
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
             sage: M.<q, p> = SymplecticVectorSpace(2, symplectic_name='omega')
             sage: omega = M.symplectic_form()
             sage: omega.display()
