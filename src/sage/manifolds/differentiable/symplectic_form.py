@@ -279,12 +279,10 @@ class SymplecticForm(DiffForm):
             sage: M = SymplecticVectorSpace(2)
             sage: omega = M.symplectic_form()
             sage: poisson = omega.poisson(); poisson
-            Tensor field poisson_omega of type (2,0) on the 2-dimensional symplectic vector space V
+            2-vector field poisson_omega on the 2-dimensional symplectic vector space V
             sage: poisson.display()
-            poisson_omega = -e_q*e_p + e_p*e_q
-            TOOD: Rewrite this via wedge product?
+            poisson_omega = -e_q/\e_p
         """
-
         if self._poisson is None:
             # Initialize the Poisson tensor
             poisson_name = f'poisson_{self._name}'
@@ -759,10 +757,9 @@ class SymplecticFormParal(SymplecticForm, DiffFormParal):
             sage: M = SymplecticVectorSpace(2)
             sage: omega = M.symplectic_form()
             sage: poisson = omega.poisson(); poisson
-            Tensor field poisson_omega of type (2,0) on the 2-dimensional symplectic vector space V
+            2-vector field poisson_omega on the 2-dimensional symplectic vector space V
             sage: poisson.display()
-            poisson_omega = -e_q*e_p + e_p*e_q
-            TOOD: Rewrite this via wedge product?
+            poisson_omega = -e_q/\e_p
         """
         super().poisson()
 

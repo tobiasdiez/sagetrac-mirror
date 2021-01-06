@@ -16,17 +16,16 @@ AUTHORS:
 # *****************************************************************************
 
 
-from sage.manifolds.differentiable.tensorfield_paral import TensorFieldParal
+from sage.manifolds.differentiable.multivectorfield import MultivectorField, MultivectorFieldParal
 from sage.manifolds.differentiable.diff_form import DiffForm
 from sage.manifolds.differentiable.vectorfield import VectorField
 from sage.manifolds.differentiable.scalarfield import DiffScalarField
 from sage.manifolds.differentiable.vectorfield_module import VectorFieldModule
 from sage.manifolds.differentiable.manifold import DifferentiableManifold
-from sage.manifolds.differentiable.tensorfield import TensorField
 from typing import Optional, Union
 
 
-class PoissonTensorField(TensorField):
+class PoissonTensorField(MultivectorField):
     r"""
     A Poisson bivector field `\varpi` on a differentiable manifold.
 
@@ -61,7 +60,7 @@ class PoissonTensorField(TensorField):
             sage: poisson = M.poisson_tensor('varpi')
             sage: poisson.set_comp()[1,2] = -1
             sage: poisson.display()
-            varpi = -e_q*e_p + e_p*e_q
+            varpi = -e_q/\e_p
 
         """
         try:
@@ -74,7 +73,7 @@ class PoissonTensorField(TensorField):
             if latex_name is None:
                 latex_name = "\\varpi"
 
-        TensorField.__init__(self, vector_field_module, (2, 0), name=name, latex_name=latex_name, antisym=(0, 1))
+        MultivectorField.__init__(self, vector_field_module, 2, name=name, latex_name=latex_name)
 
     def hamiltonian_vector_field(self, function: DiffScalarField) -> VectorField:
         r"""
@@ -146,7 +145,7 @@ class PoissonTensorField(TensorField):
         return poisson_bracket
 
 
-class PoissonTensorFieldParal(PoissonTensorField, TensorFieldParal):
+class PoissonTensorFieldParal(PoissonTensorField, MultivectorFieldParal):
     
     def __init__(self, manifold: Union[DifferentiableManifold, VectorFieldModule], name: Optional[str] = None, latex_name: Optional[str] = None):
         try:
@@ -159,4 +158,4 @@ class PoissonTensorFieldParal(PoissonTensorField, TensorFieldParal):
             if latex_name is None:
                 latex_name = "\\varpi"
 
-        TensorFieldParal.__init__(self, vector_field_module, (2, 0), name=name, latex_name=latex_name, antisym=(0, 1))
+        MultivectorFieldParal.__init__(self, vector_field_module, 2, name=name, latex_name=latex_name)
