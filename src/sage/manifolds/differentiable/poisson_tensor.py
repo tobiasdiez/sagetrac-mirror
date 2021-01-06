@@ -38,9 +38,8 @@ class PoissonTensorField(MultivectorField):
     where `T^*_m M` stands for the cotangent space to the
     manifold `M` at the point `m`, such that `\varpi_m` is skew-symmetric and the
     Schouten bracket of `\varpi` with itself vanishes.
-
     """
-    def __init__(self, manifold: Union[DifferentiableManifold, VectorFieldModule], name: Optional[str] = None, latex_name: Optional[str] = None):
+    def __init__(self, manifold: Union[DifferentiableManifold, VectorFieldModule], name: Optional[str] = "varpi", latex_name: Optional[str] = "\\varpi"):
         r"""
         Construct a Poisson bivector field.
 
@@ -49,7 +48,7 @@ class PoissonTensorField(MultivectorField):
         - ``manifold`` -- module `\mathfrak{X}(M)` of vector
         fields on the manifold `M`, or the manifold `M` itself
         - ``name`` -- (default: ``varpi``) name given to the Poisson tensor
-        - ``latex_name`` -- (default: ``None``) LaTeX symbol to denote the Poisson tensor;
+        - ``latex_name`` -- (default: ``\\varpi``) LaTeX symbol to denote the Poisson tensor;
         if ``None``, it is formed from ``name``
 
         EXAMPLES:
@@ -61,17 +60,11 @@ class PoissonTensorField(MultivectorField):
             sage: poisson.set_comp()[1,2] = -1
             sage: poisson.display()
             varpi = -e_q/\e_p
-
         """
         try:
             vector_field_module = manifold.vector_field_module()
         except AttributeError:
             vector_field_module = manifold
-
-        if name is None:
-            name = "varpi"
-            if latex_name is None:
-                latex_name = "\\varpi"
 
         MultivectorField.__init__(self, vector_field_module, 2, name=name, latex_name=latex_name)
 
@@ -89,16 +82,14 @@ class PoissonTensorField(MultivectorField):
 
         INPUT:
 
-        - ```function`` -- the function generating the Hamiltonian vector field
+        - ``function`` -- the function generating the Hamiltonian vector field
 
         EXAMPLES:
+
             sage: M.<q, p> = EuclideanSpace(2, "R2", symbols=r"q:q p:p")
             sage: poisson = M.poisson_tensor('varpi')
             sage: poisson.set_comp()[1,2] = -1
             sage: f = M.scalar_field({ chart: function('f')(*chart[:]) for chart in M.atlas() }, name='f')
-            sage: f.display()
-            f: R2 --> R
-                (q, p) |--> f(q, p)
             sage: Xf = poisson.hamiltonian_vector_field(f)
             sage: Xf.display()
             Xf = d(f)/dp e_q - d(f)/dq e_p
@@ -119,7 +110,17 @@ class PoissonTensorField(MultivectorField):
         In indicies, `\alpha^i = \varpi^{ij} \alpha_j`.
 
         INPUT:
+
         - ``form`` -- the differential form to calculate it's sharp of
+
+        EXAMPLES:
+
+            sage: M.<q, p> = EuclideanSpace(2, "R2", symbols=r"q:q p:p")
+            sage: poisson = M.poisson_tensor('varpi')
+            sage: poisson.set_comp()[1,2] = -1
+            sage: a = M.one_form(1, 0, name='a')
+            sage: poisson.sharp(a).display()
+            a_sharp = e_p
         """
         if form.degree() != 1:
             raise ValueError(f"the degree of the differential form must be one but it is {form.degree()}")
@@ -137,8 +138,20 @@ class PoissonTensorField(MultivectorField):
         of the given functions.
 
         INPUT:
+
         - ``f`` -- first function
         - ``g`` -- second function
+
+        EXAMPLES:
+
+            sage: M.<q, p> = EuclideanSpace(2, "R2", symbols=r"q:q p:p")
+            sage: poisson = M.poisson_tensor('varpi')
+            sage: poisson.set_comp()[1,2] = -1
+            sage: f = M.scalar_field({ chart: function('f')(*chart[:]) for chart in M.atlas() }, name='f')
+            sage: g = M.scalar_field({ chart: function('g')(*chart[:]) for chart in M.atlas() }, name='g')
+            sage: poisson.poisson_bracket(f, g).display()
+            poisson(f, g): R2 --> R
+                (q, p) |--> d(f)/dp*d(g)/dq - d(f)/dq*d(g)/dp
         """
         poisson_bracket = self.contract(0, f.exterior_derivative()).contract(0, g.exterior_derivative())
         poisson_bracket.set_name(f"poisson({f._name}, {g._name})", '\\{' + f'{f._latex_name}, {g._latex_name}' + '\\}')
@@ -148,14 +161,5 @@ class PoissonTensorField(MultivectorField):
 class PoissonTensorFieldParal(PoissonTensorField, MultivectorFieldParal):
     
     def __init__(self, manifold: Union[DifferentiableManifold, VectorFieldModule], name: Optional[str] = None, latex_name: Optional[str] = None):
-        try:
-            vector_field_module = manifold.vector_field_module()
-        except AttributeError:
-            vector_field_module = manifold
-
-        if name is None:
-            name = "varpi"
-            if latex_name is None:
-                latex_name = "\\varpi"
-
-        MultivectorFieldParal.__init__(self, vector_field_module, 2, name=name, latex_name=latex_name)
+        PoissonTensorField.__init__(self, manifold, name, latex_name)
+        MultivectorFieldParal.__init__(self, self._vmodule, 2, name, latex_name)
