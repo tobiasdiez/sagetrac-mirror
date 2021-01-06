@@ -115,6 +115,12 @@ class SymplecticVectorSpace(EuclideanSpace):
     def _repr_(self):
         r"""
         Return a string representation of ``self``.
+
+        EXAMPLES:
+
+            sage: from sage.manifolds.differentiable.examples.symplectic_vector_space import SymplecticVectorSpace
+            sage: V.<q, p> = SymplecticVectorSpace(2, symplectic_name='omega'); V
+            2-dimensional symplectic vector space V
         """
         return f"{self._dim}-dimensional symplectic vector space {self._name}"
 

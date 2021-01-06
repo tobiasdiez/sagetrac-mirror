@@ -418,7 +418,6 @@ class SymplecticForm(DiffForm):
 
     def hodge_star(self, pform: DiffForm) -> DiffForm:
         r"""
-        TODO: Add symplectic hodge star
         Compute the Hodge dual of a differential form with respect to the
         metric.
 
