@@ -12,8 +12,9 @@ Mutability Cython Implementation
 ##########################################################################
 
 from sage.misc.decorators import sage_wraps
+cimport cython
 
-
+@cython.auto_pickle(True)
 cdef class Mutability:
 
     def __init__(self, is_immutable=False):
