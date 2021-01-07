@@ -45,7 +45,7 @@ cdef class Mutability:
         """
         self._is_immutable = 1
 
-    def is_immutable(self):
+    cpdef bint is_immutable(self):
         """
         Return ``True`` if this object is immutable (cannot be changed)
         and ``False`` if it is not.
@@ -66,7 +66,7 @@ cdef class Mutability:
         """
         self._is_immutable
 
-    def is_mutable(self):
+    cpdef bint is_mutable(self):
         return not self._is_immutable
 
 ##########################################################################
@@ -109,12 +109,15 @@ def require_mutable(f):
 
     AUTHORS:
 
-    - Simon King <simon.king@uni-jena.de>
+    - Simon King <simon.king@uni-jena.de>: initial version
+    - Michael Jung <m.jung@vu.nl>: allowed ``_is_mutable`` attribute and
+      edited error message
+
     """
     @sage_wraps(f)
-    def new_f(self, *args,**kwds):
-        if getattr(self, '_is_immutable', False):
-            raise ValueError("%s instance is immutable, %s must not be called" % (type(self), repr(f)))
+    def new_f(self, *args, **kwds):
+        if getattr(self, '_is_immutable', False) or not getattr(self, '_is_mutable', False):
+            raise ValueError("object is immutable; please use a mutable copy instead.")
         return f(self, *args, **kwds)
     return new_f
 
@@ -159,8 +162,8 @@ def require_immutable(f):
     - Simon King <simon.king@uni-jena.de>
     """
     @sage_wraps(f)
-    def new_f(self, *args,**kwds):
-        if not getattr(self,'_is_immutable',False):
-            raise ValueError("%s instance is mutable, %s must not be called" % (type(self), repr(f)))
-        return f(self, *args,**kwds)
+    def new_f(self, *args, **kwds):
+        if not getattr(self, '_is_immutable', False) or getattr(self, '_is_mutable', False):
+            raise ValueError("object is mutable; please make it immutable first.")
+        return f(self, *args, **kwds)
     return new_f
