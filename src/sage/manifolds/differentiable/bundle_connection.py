@@ -275,6 +275,7 @@ class BundleConnection(SageObject, Mutability):
         self._coefficients = self._connection_forms
         # Initialization of derived quantities:
         self._init_derived()
+        Mutability.__init__(self)
 
     def _repr_(self):
         r"""
@@ -1052,6 +1053,7 @@ class BundleConnection(SageObject, Mutability):
             sage: X.<x,y> = M.chart()
             sage: E = M.vector_bundle(2, 'E')
             sage: nab = E.bundle_connection('nabla', latex_name=r'\nabla')
+            sage: nab.set_immutable()
             sage: hash(nab) == nab.__hash__()
             True
 
@@ -1062,7 +1064,7 @@ class BundleConnection(SageObject, Mutability):
 
         """
         if self._hash == -1:
-            self._hash = hash(repr(self))
+            self._hash = hash((type(self).__name__, self._vbundle))
         return self._hash
 
     def __getitem__(self, args):
