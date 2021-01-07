@@ -95,14 +95,14 @@ def require_mutable(f):
         sage: hash(a)
         Traceback (most recent call last):
         ...
-        ValueError: <class '__main__.A'> instance is mutable, <function ...__hash__ at ...> must not be called
+        ValueError: object is mutable; please make it immutable first.
         sage: a._is_immutable = True
         sage: hash(a)
         6
         sage: a.change(7)   # indirect doctest
         Traceback (most recent call last):
         ...
-        ValueError: <class '__main__.A'> instance is immutable, <function ...change at ...> must not be called
+        ValueError: object is immutable; please use a mutable copy instead.
         sage: from sage.misc.sageinspect import sage_getdoc
         sage: print(sage_getdoc(a.change))
         change self
@@ -110,13 +110,13 @@ def require_mutable(f):
     AUTHORS:
 
     - Simon King <simon.king@uni-jena.de>: initial version
-    - Michael Jung <m.jung@vu.nl>: allowed ``_is_mutable`` attribute and
-      edited error message
+    - Michael Jung <m.jung@vu.nl>: allow ``_is_mutable`` attribute and new
+      error message
 
     """
     @sage_wraps(f)
     def new_f(self, *args, **kwds):
-        if getattr(self, '_is_immutable', False) or not getattr(self, '_is_mutable', False):
+        if getattr(self, '_is_immutable', False) or not getattr(self, '_is_mutable', True):
             raise ValueError("object is immutable; please use a mutable copy instead.")
         return f(self, *args, **kwds)
     return new_f
@@ -145,25 +145,28 @@ def require_immutable(f):
         sage: hash(a)   # indirect doctest
         Traceback (most recent call last):
         ...
-        ValueError: <class '__main__.A'> instance is mutable, <function ...__hash__ at ...> must not be called
+        ValueError: object is mutable; please make it immutable first.
         sage: a._is_immutable = True
         sage: hash(a)
         6
         sage: a.change(7)
         Traceback (most recent call last):
         ...
-        ValueError: <class '__main__.A'> instance is immutable, <function ...change at ...> must not be called
+        ValueError: object is immutable; please use a mutable copy instead.
         sage: from sage.misc.sageinspect import sage_getdoc
         sage: print(sage_getdoc(a.__hash__))
         implement hash
 
     AUTHORS:
 
-    - Simon King <simon.king@uni-jena.de>
+    - Simon King <simon.king@uni-jena.de>: initial version
+    - Michael Jung <m.jung@vu.nl>: allow ``_is_mutable`` attribute and new
+      error message
+
     """
     @sage_wraps(f)
     def new_f(self, *args, **kwds):
-        if not getattr(self, '_is_immutable', False) or getattr(self, '_is_mutable', False):
+        if not getattr(self, '_is_immutable', False) and getattr(self, '_is_mutable', True):
             raise ValueError("object is mutable; please make it immutable first.")
         return f(self, *args, **kwds)
     return new_f
