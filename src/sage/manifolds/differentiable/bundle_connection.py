@@ -40,7 +40,7 @@ AUTHORS:
 # ******************************************************************************
 
 from sage.structure.sage_object import SageObject
-from sage.structure.mutability import Mutability, require_mutable
+from sage.structure.mutability import Mutability, require_mutable, require_immutable
 from sage.rings.integer import Integer
 from sage.manifolds.differentiable.vector_bundle import \
     DifferentiableVectorBundle
@@ -1041,6 +1041,7 @@ class BundleConnection(SageObject, Mutability):
             self._curvature_forms[frame][(i, j)] = curv_form
         return self._curvature_forms[frame][(i, j)]
 
+    @require_immutable
     def __hash__(self):
         r"""
         Hash function.
