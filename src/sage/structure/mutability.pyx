@@ -123,7 +123,7 @@ def require_mutable(f):
         sage: a.set_immutable()
         sage: hash(a)
         6
-        sage: a.change(7)
+        sage: a.change(7)   # indirect doctest
         Traceback (most recent call last):
         ...
         ValueError: object is immutable; please use a mutable copy instead.
@@ -196,7 +196,7 @@ def require_immutable(f):
         sage: a.set_immutable()
         sage: hash(a)
         6
-        sage: a.change(7)
+        sage: a.change(7)   # indirect doctest
         Traceback (most recent call last):
         ...
         ValueError: object is immutable; please use a mutable copy instead.
