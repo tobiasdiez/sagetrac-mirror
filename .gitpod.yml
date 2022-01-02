@@ -18,9 +18,6 @@ tasks:
       # Disable pyenv since it would interfere with sages build process
       # pyenv shell --unset
     init: |
-      # Reuse non-Python packages compiled during the docker build
-      mv /home/gitpod/sage-local /workspace/sage-local
-
       # Setup trac repo
       git remote add trac git@trac.sagemath.org:sage.git -t master
       git remote set-url --push trac git@trac.sagemath.org:sage.git
@@ -30,7 +27,7 @@ tasks:
 
       # Start build
       ./bootstrap
-      ./configure --enable-editable --prefix=/workspace/sage-local --with-sage-venv
+      ./configure --enable-editable
       ## Gitpod has a timeout of 1h, so make sure we are below this to ensure that the prebuild is always successful
       MAKE='make -j16' timeout 5m make build V=0 || true
     env: 
