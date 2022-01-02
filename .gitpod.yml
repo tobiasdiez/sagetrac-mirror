@@ -14,7 +14,7 @@ tasks:
       sed -i '/^$/d' ~/.ssh/id_rsa
       chmod 600 ~/.ssh/id_rsa
       unset PRIVATE_SSH_KEY
-      ssh-keyscan -H trac.sagemath.org >> ~/.ssh/known_hosts
+      # ssh-keyscan -H trac.sagemath.org >> ~/.ssh/known_hosts
       # Disable pyenv since it would interfere with sages build process
       # pyenv shell --unset
     init: |
@@ -29,7 +29,7 @@ tasks:
       ./bootstrap
       ./configure --enable-editable
       ## Gitpod has a timeout of 1h, so make sure we are below this to ensure that the prebuild is always successful
-      MAKE='make -j16' timeout 50m make build V=0 || true
+      MAKE='make -j8' timeout 50m make build V=0 || true
     env: 
       SAGE_NUM_THREADS: 8
 
