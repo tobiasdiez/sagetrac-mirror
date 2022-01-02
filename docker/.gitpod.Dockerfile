@@ -46,7 +46,7 @@ COPY --chown=gitpod:gitpod ./pkgs ./pkgs
 COPY --chown=gitpod:gitpod ./sage ./sage
 COPY --chown=gitpod:gitpod ./Makefile ./Makefile
 RUN ./bootstrap
-RUN ./configure --prefix=/home/gitpod/sage-local --with-sage-venv
+RUN ./configure --prefix=/home/gitpod/sage-local
 ### V=0 since otherwise we would reach log limit
 ### Gitpod also puts a timeout at 1h
 ### So we use the construction timeout ... || true
@@ -59,6 +59,11 @@ RUN MAKE='make -j16' timeout 48m make build-local V=0  || true
 FROM prepare
 # Reuse the prebuild packages
 COPY --chown=gitpod:gitpod --from=prebuild /home/gitpod/sage-local /home/gitpod/sage-local
+ENV PATH=/home/gitpod/sage-prebuild/bin:$PATH
+ENV PKG_CONFIG_PATH=/home/gitpod/sage-prebuild/lib/pkgconfig:$PKG_CONFIG_PATH
+ENV CPPFLAGS="-I/home/gitpod/sage-prebuild/include $CPPFLAGS"
+ENV LDFLAGS="-L/home/gitpod/sage-prebuild/lib $LDFLAGS"
+ENV LD_LIBRARY_PATH="/home/gitpod/sage-prebuild/lib:$LD_LIBRARY_PATH"
 
 # Configure 
 ## Gitpod sets PIP_USER: yes by default (in the full workspace image), which leads to problems during build (e.g pip not being installed in the venv)
