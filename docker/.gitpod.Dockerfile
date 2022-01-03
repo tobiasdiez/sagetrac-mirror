@@ -46,7 +46,7 @@ COPY --chown=gitpod:gitpod ./pkgs ./pkgs
 COPY --chown=gitpod:gitpod ./sage ./sage
 COPY --chown=gitpod:gitpod ./Makefile ./Makefile
 RUN ./bootstrap
-RUN ./configure --prefix=/home/gitpod/sage-local
+RUN ./configure --prefix=/home/gitpod/sage-prebuild
 ### V=0 since otherwise we would reach log limit
 ### Gitpod also puts a timeout at 1h
 ### So we use the construction timeout ... || true
