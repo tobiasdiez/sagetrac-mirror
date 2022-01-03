@@ -10,8 +10,8 @@ COPY --chown=gitpod:gitpod ./configure.ac ./configure.ac
 COPY --chown=gitpod:gitpod ./build ./build
 
 # Install system packages
-RUN sudo apt-get update
-RUN sudo apt-get install -y --no-install-recommends \
+RUN sudo install-packages \
+        python3-pip \
         $(build/bin/sage-get-system-packages debian \
             _bootstrap \
             $(PATH=build/bin:$PATH build/bin/sage-package list \
@@ -20,6 +20,9 @@ RUN sudo apt-get install -y --no-install-recommends \
     # As of 2021-12, gitpod uses ubuntu-focal. To save space, we filter out some packages (pari, flint) that are
     # too old and will be rejected by our configure script.
     # We do not install tox, since it pulls in javascript-common which does not install for some reason
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir --upgrade \
+        setuptools wheel virtualenv pipenv pylint rope flake8 mypy autopep8 pep8 pydocstyle notebook
 
 ## Homebrew has some more up-to-date packages (but sage is not yet able to find them)
 ### RUN brew update && brew upgrade
