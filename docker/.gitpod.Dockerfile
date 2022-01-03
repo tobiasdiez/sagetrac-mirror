@@ -58,7 +58,7 @@ RUN MAKE='make -j16' timeout 45m make build-local V=0  || true
 ##
 FROM prepare
 # Reuse the prebuild packages
-COPY --chown=gitpod:gitpod --from=prebuild /home/gitpod/sage-local /home/gitpod/sage-local
+COPY --chown=gitpod:gitpod --from=prebuild /home/gitpod/sage-prebuild /home/gitpod/sage-prebuild
 ENV PATH=/home/gitpod/sage-prebuild/bin:$PATH
 ENV PKG_CONFIG_PATH=/home/gitpod/sage-prebuild/lib/pkgconfig:$PKG_CONFIG_PATH
 ENV CPPFLAGS="-I/home/gitpod/sage-prebuild/include $CPPFLAGS"
